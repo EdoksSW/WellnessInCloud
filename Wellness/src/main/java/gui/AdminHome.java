@@ -1,6 +1,10 @@
+package gui;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import controller.Controller;
+import model.utenti.Admin;
 
 public class AdminHome {
     Controller controller;
@@ -15,7 +19,7 @@ public class AdminHome {
         return mainPanel;
     }
 
-    public AdminHome(JFrame finestraCorrente) {
+    public AdminHome(Controller controller, Admin admin) {
             this.controller = controller;
             Admin adminLoggato=admin;
 

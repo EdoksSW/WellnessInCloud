@@ -1,4 +1,4 @@
-package gui;
+package gui.AdminHome;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -51,7 +51,7 @@ public class AdminHome {
                 int risposta = JOptionPane.showConfirmDialog(mainPanel, "sei sicuro di voler uscire?", "Logout", JOptionPane.YES_NO_OPTION);
 
                 if (risposta==JOptionPane.YES_OPTION){
-                    JOptionPane.showMessageDialog(mainPanel, "Logouteffettuato. Torno al Login.");
+                    JOptionPane.showMessageDialog(mainPanel, "Logout effettuato. Torno al Login.");
                     System.exit(0);
                 }
             }

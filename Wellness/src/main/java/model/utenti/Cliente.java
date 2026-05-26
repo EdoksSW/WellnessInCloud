@@ -14,4 +14,20 @@ public class Cliente extends Utente {
         this.cap = cap;
         this.statoAcc = statoAcc;
     }
+
+    public String getIndirizzo() {
+        return indirizzo;
+    }
+
+    public StatoAccount getStatoAcc() {
+        return statoAcc;
+    }
+
+    public String getCap() {
+        return cap;
+    }
+
+    public int getNumeroCivico() {
+        return numCivico;
+    }
 }

@@ -1,5 +1,5 @@
 package gui;
-
+import gui.*;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,7 +47,7 @@ public class LoginFrame {
 
                         //Istanziamo la GUI specifica dell'Admin e la carichiamo nel Frame
                         AdminHome adminHome=new AdminHome(controller, admin);
-                        framePrincipale.setContentPane(adminHome.getAdminPanel);
+                        framePrincipale.setContentPane(adminHome.getAdminPanel());
                     } else if (utenteLoggato instanceof Staff)
                     {
                         Staff staff=(Staff) utenteLoggato;

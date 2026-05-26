@@ -15,7 +15,7 @@ public class StaffHome {
     private JButton btnLogout;
     private JLabel lblTitolo;
 
-    public JPanel StaffPanel() {
+    public JPanel getStaffPanel() {
         return mainPanel;
     }
 
@@ -28,7 +28,12 @@ public class StaffHome {
             }
         });
 
-        btnGestionePrenotazioni.addActionListener(new);
+        btnGestionePrenotazioni.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: ");
+            }
+        });
 
 
 

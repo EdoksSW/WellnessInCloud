@@ -16,6 +16,10 @@ public class HomeClient extends JFrame {
     private Controller controller;
     private Cliente clienteLoggato;
 
+    public JPanel gethomePanel() {
+        return panel1;
+    }
+
     public HomeClient(Controller controller, Cliente clienteLoggato) {
         this.controller = controller;
         this.clienteLoggato = clienteLoggato;

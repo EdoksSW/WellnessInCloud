@@ -4,8 +4,14 @@ import javax.swing.*;
 
 public class Main
 {
-    JFrame frame=new JFrame("Login");
-    LoginFrame loginFrame=new LoginFrame();
+    public static void main(String[] args)
+    {
+        JFrame frame=new JFrame("Login");
+        LoginFrame loginFrame=new LoginFrame();
 
-    frame.setContentPanel();
+        frame.setContentPane(loginFrame.getLoginPanel());
+        frame.setSize(400, 600);
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
 }

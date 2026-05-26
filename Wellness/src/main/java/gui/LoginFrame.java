@@ -3,7 +3,6 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import controller.Controller;
-import gui.AdminHome.AdminHome;
 import model.enums.StatoAccount;
 import model.utenti.Admin;
 import model.utenti.Cliente;
@@ -56,6 +55,8 @@ public class LoginFrame {
                         //Istanziamo la GUI specifica dello Stff
                         StaffHome staffHome=new StaffHome(controller, staff);
                         framePrincipale.setContentPane(staffHome.getStaffPanel());
+                        framePrincipale.revalidate();
+                        framePrincipale.repaint();
                     } else if (utenteLoggato instanceof Cliente)
                     {
                         Cliente cliente=(Cliente) utenteLoggato;

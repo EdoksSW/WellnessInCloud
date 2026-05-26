@@ -21,8 +21,6 @@ public class StaffHome {
 
     public StaffHome(Controller controller, Staff staff) {
 
-
-
         btnVerificaCertificati.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -30,7 +28,7 @@ public class StaffHome {
             }
         });
 
-        btnGestionePrenotazioni.addActionListener();
+        btnGestionePrenotazioni.addActionListener(new);
 
 
 

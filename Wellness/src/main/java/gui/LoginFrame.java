@@ -65,10 +65,29 @@ public class LoginFrame {
                         if(cliente.getStatoAcc() == StatoAccount.BLOCCATO)
                         {
                             JOptionPane.showMessageDialog(loginPanel,"Il tuo account è bloccato. Contatta la segreteria.", "Accesso Negato", JOptionPane.ERROR_MESSAGE);
+                            return; //Interrompe l'esecuzione e non lo fa entrare nella home
                         }
+                        else if(cliente.getStatoAcc() == StatoAccount.IN_REVISIONE)
+                        {
+                            JOptionPane.showMessageDialog(loginPanel, "Il tuo account attualmente è in revisione. Contatta la segreteria", "Account in revizione", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        JOptionPane.showMessageDialog(loginPanel,"Benvenuto"+ cliente.getNome()+"!");
+                        HomeClient homeClient=new HomeClient(controller, cliente);
+                        framePrincipale.setContentPane(homeClient.gethomePanel());
                     }
-                }
 
+                    // AGGIORNAMENTO DEL FRAME
+                    // Istruzioni obbligatorrie per dire a Swing di distruggere la vecchia grafica del login e disegnare la Home corretta
+                    framePrincipale.validate();
+                    framePrincipale.repaint();
+                }
+                else
+                {
+                    //Se il controller restituiscire null, le credenziali sono errate
+                    JOptionPane.showMessageDialog(loginPanel, "Email o Password errati!", "Errore di Autenticazione", JOptionPane.ERROR_MESSAGE);
+                    txtPassword.setText("");
+                }
             }
         });
     }

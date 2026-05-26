@@ -31,12 +31,27 @@ public class StaffHome {
         btnGestionePrenotazioni.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: ");
+                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Registro Prenotazioni Lezioni");
             }
         });
 
+        btnVisualizzaTurni.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Calendario Turni di Lavoro Personali");
+            }
+        });
 
+        btnLogout.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int risposta = JOptionPane.showConfirmDialog(mainPanel, "sei sicuro di voler uscire?", "Logout", JOptionPane.YES_NO_OPTION);
 
-
+                if (risposta==JOptionPane.YES_OPTION){
+                    JOptionPane.showMessageDialog(mainPanel, "Logout effettuato. Torno al Login.");
+                    System.exit(0);
+                }
+            }
+        });
     }
 }

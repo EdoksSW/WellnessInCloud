@@ -55,7 +55,7 @@ public class LoginFrame {
 
                         //Istanziamo la GUI specifica dello Stff
                         StaffHome staffHome=new StaffHome(controller, staff);
-                        framePrincipale.setContentPane(staffHome,getStaffPanel());
+                        framePrincipale.setContentPane(staffHome.getStaffPanel());
                     } else if (utenteLoggato instanceof Cliente)
                     {
                         Cliente cliente=(Cliente) utenteLoggato;

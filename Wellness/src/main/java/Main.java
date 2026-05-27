@@ -10,7 +10,7 @@ public class Main
         LoginFrame loginFrame=new LoginFrame();
 
         frame.setContentPane(loginFrame.getLoginPanel());
-        frame.setSize(400, 600);
+        frame.setSize(400, 200);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }

@@ -54,7 +54,7 @@ public class HomeClient extends JFrame {
 
         JButton btnLogout = new JButton("Disconnetti");
         btnLogout.addActionListener(e -> {
-            new LoginFrame();
+            new LoginFrame(this.controller);
             dispose();
         });
         mainPanel.add(btnLogout, BorderLayout.SOUTH);

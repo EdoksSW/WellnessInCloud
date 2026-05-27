@@ -26,11 +26,11 @@ public class LoginFrame {
         return btnRegistrazione;
     }
 
-    public LoginFrame() {
+    public LoginFrame(Controller pController) {
+        Controller controller=pController;
         accediButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                Controller controller=new Controller();
                 String Email=txtEmail.getText();
                 String Password=txtPassword.getText();
                 Utente utenteLoggato=controller.login(Email, Password);

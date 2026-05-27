@@ -14,6 +14,7 @@ public class LoginFrame {
     private JTextField txtEmail;
     private JTextField txtPassword;
     private JButton accediButton;
+    private JLabel titolo;
     private JButton btnRegistrazione;
 
 

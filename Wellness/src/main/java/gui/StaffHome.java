@@ -13,7 +13,6 @@ public class StaffHome {
     private JButton btnGestionePrenotazioni;
     private JButton btnVisualizzaTurni;
     private JButton btnLogout;
-    private JLabel lblTitolo;
 
     public JPanel getStaffPanel() {
         return mainPanel;

@@ -1,5 +1,5 @@
 import gui.LoginFrame;
-
+import controller.Controller;
 import javax.swing.*;
 
 public class Main
@@ -7,7 +7,7 @@ public class Main
     public static void main(String[] args)
     {
         JFrame frame=new JFrame("Login");
-        LoginFrame loginFrame=new LoginFrame();
+        LoginFrame loginFrame=new LoginFrame(new Controller());
 
         frame.setContentPane(loginFrame.getLoginPanel());
         frame.setSize(400, 200);

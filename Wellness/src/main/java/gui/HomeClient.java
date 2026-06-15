@@ -1,4 +1,4 @@
-package gui; // Deve stare rigorosamente alla riga 1!
+package gui;
 
 import controller.Controller;
 import model.utenti.Cliente;
@@ -6,30 +6,30 @@ import model.utenti.Cliente;
 import javax.swing.*;
 import java.awt.*;
 
-public class HomeClient extends JFrame {
+public class HomeClient {
 
-    // --- IL PONTE CON IL FILE .FORM ---
-    // Questa variabile serve a dire a IntelliJ di tenere raggruppati i file.
-    // Anche se non la usiamo direttamente, fa da "ancora" per l'IDE.
     private JPanel panel1;
 
     private Controller controller;
     private Cliente clienteLoggato;
 
+    public JFrame frame;
+    private JFrame frameChiamante;
+
     public JPanel gethomePanel() {
         return panel1;
     }
 
-    public HomeClient(Controller controller, Cliente clienteLoggato) {
+    public HomeClient(Controller controller, Cliente clienteLoggato, JFrame frameChiamante) {
         this.controller = controller;
         this.clienteLoggato = clienteLoggato;
+        this.frameChiamante = frameChiamante;
 
-        setTitle("Wellness In Cloud - Area Cliente");
-        setSize(500, 380);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        frame = new JFrame("Wellness In Cloud - Area Cliente");
+        frame.setSize(500, 380);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
 
-        // Il tuo pannello scritto via codice (ignora il panel1 del form)
         JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -54,12 +54,12 @@ public class HomeClient extends JFrame {
 
         JButton btnLogout = new JButton("Disconnetti");
         btnLogout.addActionListener(e -> {
-            new LoginFrame(this.controller);
-            dispose();
+            frameChiamante.setVisible(true);
+            frame.dispose();
         });
         mainPanel.add(btnLogout, BorderLayout.SOUTH);
 
-        add(mainPanel);
-        setVisible(true);
+        frame.setContentPane(mainPanel);
+        frame.setVisible(true);
     }
 }

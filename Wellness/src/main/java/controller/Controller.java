@@ -1,9 +1,9 @@
 package controller;
 import model.utenti.*;
 import model.enums.*;
+import model.commerce.*;
+import model.logistica.*;
 import java.util.ArrayList;
-import java.time.LocalDate;
-import java.lang.String;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -11,9 +11,20 @@ public class Controller
 {
     private List<Utente> utenti;
 
+    private List<Prodotto> prodotti;
+    private List<Corso> corsi;
+    private List<Prenotazione> prenotazioni;
+    private List<Iscrizione> iscrizioni;
+    private List<Ordine> ordini;
+
 
     public Controller() {
         utenti = new ArrayList<>();
+        prodotti = new ArrayList<>();
+        corsi = new ArrayList<>();
+        prenotazioni = new ArrayList<>();
+        iscrizioni = new ArrayList<>();
+        ordini = new ArrayList<>();
         initializeDatiMock();
     }
 
@@ -63,6 +74,19 @@ public class Controller
         for (Utente u : utenti) {
             if (u.getEmail().equalsIgnoreCase(email) && u.getPassword().equals(password)) {
                 return u;
+            }
+        }
+        return null;
+    }
+
+    public String messaggioAccessoNegato(Utente u) {
+        if (u instanceof Cliente) {
+            Cliente cliente = (Cliente) u;
+            if (cliente.getStatoAcc() == StatoAccount.BLOCCATO) {
+                return "Il tuo account è bloccato. Contatta la segreteria.";
+            }
+            if (cliente.getStatoAcc() == StatoAccount.IN_REVISIONE) {
+                return "Il tuo account è attualmente in revisione. Contatta la segreteria.";
             }
         }
         return null;

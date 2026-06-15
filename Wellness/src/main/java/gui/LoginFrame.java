@@ -3,7 +3,6 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import controller.Controller;
-import model.enums.StatoAccount;
 import model.utenti.Admin;
 import model.utenti.Cliente;
 import model.utenti.Staff;
@@ -17,6 +16,7 @@ public class LoginFrame {
     private JLabel titolo;
     private JButton btnRegistrazione;
 
+    public JFrame frame;
 
     public JPanel getLoginPanel() {
         return loginPanel;
@@ -27,68 +27,42 @@ public class LoginFrame {
     }
 
     public LoginFrame(Controller pController) {
-        Controller controller=pController;
+        Controller controller = pController;
+
+        frame = new JFrame("Login");
+        frame.setContentPane(loginPanel);
+        frame.setSize(400, 200);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+
         accediButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String Email=txtEmail.getText();
-                String Password=txtPassword.getText();
-                Utente utenteLoggato=controller.login(Email, Password);
-                if(utenteLoggato != null)
-                {
-                    // Recuperiamo il JFrame principale che contiene il pannello di login attuale
-                    JFrame framePrincipale=(JFrame) SwingUtilities.getWindowAncestor(loginPanel);
+                String email = txtEmail.getText();
+                String password = txtPassword.getText();
+                Utente utenteLoggato = controller.login(email, password);
 
-                    //Controllo del tipo di Utente
-                    if(utenteLoggato instanceof Admin)
-                    {
-                        Admin admin = (Admin) utenteLoggato;
-                        JOptionPane.showMessageDialog(loginPanel, "Accesso eseguito come Amministratore" + admin.getNome());
-
-                        //Istanziamo la GUI specifica dell'Admin e la carichiamo nel Frame
-                        AdminHome adminHome=new AdminHome(controller, admin);
-                        framePrincipale.setContentPane(adminHome.getAdminPanel());
-                    } else if (utenteLoggato instanceof Staff)
-                    {
-                        Staff staff=(Staff) utenteLoggato;
-                        JOptionPane.showMessageDialog(loginPanel, "Accesso eseguito come Staff"+ staff.getNome());
-
-                        //Istanziamo la GUI specifica dello Stff
-                        StaffHome staffHome=new StaffHome(controller, staff);
-                        framePrincipale.setContentPane(staffHome.getStaffPanel());
-                        framePrincipale.revalidate();
-                        framePrincipale.repaint();
-                    } else if (utenteLoggato instanceof Cliente)
-                    {
-                        Cliente cliente=(Cliente) utenteLoggato;
-
-                        //Se l'account è bloccato o in revisione, non deve entrare!
-                        if(cliente.getStatoAcc() == StatoAccount.BLOCCATO)
-                        {
-                            JOptionPane.showMessageDialog(loginPanel,"Il tuo account è bloccato. Contatta la segreteria.", "Accesso Negato", JOptionPane.ERROR_MESSAGE);
-                            return; //Interrompe l'esecuzione e non lo fa entrare nella home
-                        }
-                        else if(cliente.getStatoAcc() == StatoAccount.IN_REVISIONE)
-                        {
-                            JOptionPane.showMessageDialog(loginPanel, "Il tuo account attualmente è in revisione. Contatta la segreteria", "Account in revizione", JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-                        JOptionPane.showMessageDialog(loginPanel,"Benvenuto"+ cliente.getNome()+"!");
-                        HomeClient homeClient=new HomeClient(controller, cliente);
-                        framePrincipale.setContentPane(homeClient.gethomePanel());
-                    }
-
-                    // AGGIORNAMENTO DEL FRAME
-                    // Istruzioni obbligatorrie per dire a Swing di distruggere la vecchia grafica del login e disegnare la Home corretta
-                    framePrincipale.validate();
-                    framePrincipale.repaint();
-                }
-                else
-                {
-                    //Se il controller restituiscire null, le credenziali sono errate
+                if (utenteLoggato == null) {
                     JOptionPane.showMessageDialog(loginPanel, "Email o Password errati!", "Errore di Autenticazione", JOptionPane.ERROR_MESSAGE);
                     txtPassword.setText("");
+                    return;
                 }
+
+                String messaggioNegato = controller.messaggioAccessoNegato(utenteLoggato);
+                if (messaggioNegato != null) {
+                    JOptionPane.showMessageDialog(loginPanel, messaggioNegato, "Accesso Negato", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (utenteLoggato instanceof Admin) {
+                    new AdminHome(controller, (Admin) utenteLoggato, frame);
+                } else if (utenteLoggato instanceof Staff) {
+                    new StaffHome(controller, (Staff) utenteLoggato, frame);
+                } else if (utenteLoggato instanceof Cliente) {
+                    new HomeClient(controller, (Cliente) utenteLoggato, frame);
+                }
+
+                frame.setVisible(false);
             }
         });
     }

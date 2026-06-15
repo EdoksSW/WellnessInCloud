@@ -14,7 +14,11 @@ public class AdminHome {
     private JButton btnVisualizzaStaff;
     private JButton btnLogout;
 
-    public AdminHome(Controller controller, Admin admin) {
+    public JFrame frame;
+    private JFrame frameChiamante;
+
+    public AdminHome(Controller controller, Admin admin, JFrame frameChiamante) {
+        this.frameChiamante = frameChiamante;
 
         btnGestionePrezzario.addActionListener(new ActionListener() {
             @Override
@@ -37,27 +41,21 @@ public class AdminHome {
         btnLogout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int risposta= JOptionPane.showConfirmDialog(mainPanel,
+                int risposta = JOptionPane.showConfirmDialog(mainPanel,
                         "Sei sicuro di voler uscire?", "Conferma Logout", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if(risposta==JOptionPane.YES_OPTION)
-                {
+                if (risposta == JOptionPane.YES_OPTION) {
+                    frameChiamante.setVisible(true);
+                    frame.dispose();
                 }
-                //Recuepro i JFrame principale di questo pannello
-                JFrame framePrincipale=(JFrame) SwingUtilities.getWindowAncestor(mainPanel);
-
-                //Istanzio la schermata di Login
-                LoginFrame login=new LoginFrame(controller);
-
-                //Ora sostituiamo il panel di Admin con quello di Login
-                framePrincipale.setContentPane(login.getLoginPanel());
-
-                //scuotiamo la memoria grafica e ridisegnamo il login
-                framePrincipale.validate();
-                framePrincipale.repaint();
-
-                JOptionPane.showMessageDialog(null,"Loout effettuato con successo. Arrivederci!");
             }
         });
+
+        frame = new JFrame("Wellness In Cloud - Area Admin");
+        frame.setContentPane(mainPanel);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
     }
 
     public JPanel getAdminPanel() {

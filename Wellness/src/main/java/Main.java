@@ -1,17 +1,10 @@
 import gui.LoginFrame;
 import controller.Controller;
-import javax.swing.*;
 
 public class Main
 {
     public static void main(String[] args)
     {
-        JFrame frame=new JFrame("Login");
-        LoginFrame loginFrame=new LoginFrame(new Controller());
-
-        frame.setContentPane(loginFrame.getLoginPanel());
-        frame.setSize(400, 200);
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        new LoginFrame(new Controller());
     }
 }

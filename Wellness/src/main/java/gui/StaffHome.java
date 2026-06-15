@@ -14,11 +14,15 @@ public class StaffHome {
     private JButton btnVisualizzaTurni;
     private JButton btnLogout;
 
+    public JFrame frame;
+    private JFrame frameChiamante;
+
     public JPanel getStaffPanel() {
         return mainPanel;
     }
 
-    public StaffHome(Controller controller, Staff staff) {
+    public StaffHome(Controller controller, Staff staff, JFrame frameChiamante) {
+        this.frameChiamante = frameChiamante;
 
         btnVerificaCertificati.addActionListener(new ActionListener() {
             @Override
@@ -44,13 +48,19 @@ public class StaffHome {
         btnLogout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int risposta = JOptionPane.showConfirmDialog(mainPanel, "sei sicuro di voler uscire?", "Logout", JOptionPane.YES_NO_OPTION);
-
-                if (risposta==JOptionPane.YES_OPTION){
-                    JOptionPane.showMessageDialog(mainPanel, "Logout effettuato. Torno al Login.");
-                    System.exit(0);
+                int risposta = JOptionPane.showConfirmDialog(mainPanel, "Sei sicuro di voler uscire?", "Logout", JOptionPane.YES_NO_OPTION);
+                if (risposta == JOptionPane.YES_OPTION) {
+                    frameChiamante.setVisible(true);
+                    frame.dispose();
                 }
             }
         });
+
+        frame = new JFrame("Wellness In Cloud - Area Staff");
+        frame.setContentPane(mainPanel);
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
     }
 }

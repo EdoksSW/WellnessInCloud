@@ -14,4 +14,16 @@ public class Staff extends Utente {
         this.iban = iban;
         this.ruolo = ruolo;
     }
+
+    public String getQualifica() {
+        return qualifica;
+    }
+
+    public String getIban() {
+        return iban;
+    }
+
+    public RuoloStaff getRuolo() {
+        return ruolo;
+    }
 }

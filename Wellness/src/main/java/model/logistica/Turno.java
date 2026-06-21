@@ -1,10 +1,33 @@
 package model.logistica;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 
 public class Turno {
     private int id;
-    private Date data;
+    private LocalDate data;
     private LocalTime oraInizio, oraFine;
+
+    public Turno(int id, LocalDate data, LocalTime oraInizio, LocalTime oraFine) {
+        this.id = id;
+        this.data = data;
+        this.oraInizio = oraInizio;
+        this.oraFine = oraFine;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public LocalDate getData() {
+        return data;
+    }
+
+    public LocalTime getOraInizio() {
+        return oraInizio;
+    }
+
+    public LocalTime getOraFine() {
+        return oraFine;
+    }
 }

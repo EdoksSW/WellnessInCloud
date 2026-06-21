@@ -35,7 +35,8 @@ public class AdminHome {
         btnVisualizzaStaff.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Gestione Staff!");
+                new GestioneStaff(controller, frame);
+                frame.setVisible(false);
             }
         });
         btnLogout.addActionListener(new ActionListener() {

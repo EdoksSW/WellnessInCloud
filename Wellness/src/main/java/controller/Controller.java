@@ -1,12 +1,17 @@
 package controller;
 import dao.UtenteDAO;
+import dao.StaffDAO;
+import dao.TurnoDAO;
 import implementazioniPostgresDAO.UtenteImplementazionePostgresDAO;
+import implementazioniPostgresDAO.StaffImplementazionePostgresDAO;
+import implementazioniPostgresDAO.TurnoImplementazionePostgresDAO;
 import model.utenti.*;
 import model.enums.*;
 import model.commerce.*;
 import model.logistica.*;
 import java.util.ArrayList;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 public class Controller
@@ -32,6 +37,31 @@ public class Controller
     public Utente login(String email, String password) {
         UtenteDAO utenteDAO = new UtenteImplementazionePostgresDAO();
         return utenteDAO.loginDB(email, password);
+    }
+
+    public ArrayList<Staff> getListaStaff() {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.getAllStaff();
+    }
+
+    public ArrayList<Turno> getTurniDiStaff(String cfStaff) {
+        TurnoDAO turnoDAO = new TurnoImplementazionePostgresDAO();
+        return turnoDAO.getTurniByStaff(cfStaff);
+    }
+
+    public boolean aggiungiTurno(String cfStaff, LocalDate data, LocalTime oraInizio, LocalTime oraFine) {
+        TurnoDAO turnoDAO = new TurnoImplementazionePostgresDAO();
+        return turnoDAO.aggiungiTurno(cfStaff, data, oraInizio, oraFine);
+    }
+
+    public boolean modificaTurno(int idTurno, LocalDate data, LocalTime oraInizio, LocalTime oraFine) {
+        TurnoDAO turnoDAO = new TurnoImplementazionePostgresDAO();
+        return turnoDAO.modificaTurno(idTurno, data, oraInizio, oraFine);
+    }
+
+    public boolean rimuoviTurno(int idTurno) {
+        TurnoDAO turnoDAO = new TurnoImplementazionePostgresDAO();
+        return turnoDAO.rimuoviTurno(idTurno);
     }
 
     public String messaggioAccessoNegato(Utente u) {

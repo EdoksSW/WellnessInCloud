@@ -27,15 +27,9 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
         }
     }
 
-    //public Cliente(String codiceFiscale, String nome, String cognome, String email, String telefono, String password, LocalDate dataNascita, String indirizzo, int numCivico, String cap, StatoAccount statoAcc)
-    //public Staff(String codiceFiscale, String nome, String cognome, String email, String telefono, String password, LocalDate dataNascita, String qualifica, String iban, RuoloStaff ruolo)
-    //public Admin(String codiceFiscale, String nome, String cognome, String email, String telefono, String password, LocalDate dataNascita)
-    
+    /*
     @Override
     public Utente loginDB(String email, String password) {
-        //Definisco la query con i dei segnaposto (?) per la sicurezza
-        //Tutte le SELECT della UNION devono avere le stesse identiche colonne nello stesso ordine
-        //Uso dei NULL per i campi che alcune tabelle non hanno
         String query= "WITH Utente AS (" +
                 "SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, eta, via, civico, cap, stato_account, NULL AS qualifica, NULL AS iban, NULL AS ruolo, 'Cliente' AS ruol FROM Cliente " +
                 "  UNION ALL " +
@@ -48,11 +42,9 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
                 "WHERE email=? AND password = ?;";
 
         try(PreparedStatement preparedStatement=this.connection.prepareStatement(query)) {
-            //Associo i parametri di input ai segnaposto della query
             preparedStatement.setString(1,email);
             preparedStatement.setString(2,password);
 
-            //Esecuzione della query sulla tabella del DB
             try(ResultSet resultSet=preparedStatement.executeQuery()){
                 if(resultSet.next())
                 {
@@ -87,11 +79,73 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
         }catch (SQLException e)
         {
             System.err.println("Errore critico durante il login nel DB: "+ e.getMessage());
-            e.printStackTrace(); //mostra la riga esatta dell'errore SQL in console
+            e.printStackTrace();
             return null;
         }
 
-        //Se il resultSet è vuoto (credenziali errate), restituisce null
+        return null;
+    }
+    */
+
+    @Override
+    public Utente loginDB(String email, String password) {
+        String query =
+                "WITH utenti AS (" +
+                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civo, cap, stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Cliente' AS ruol FROM cliente " +
+                "  UNION ALL " +
+                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civo, cap, NULL AS stato_account, iban, ruolo, qualifica, 'Staff' AS ruol FROM staff " +
+                "  UNION ALL " +
+                "  SELECT email, password, codicefiscale, nome, cognome, NULL AS telefono, datanascita, NULL AS via, NULL AS civo, NULL AS cap, NULL AS stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Admin' AS ruol FROM admin " +
+                ") " +
+                "SELECT * FROM utenti WHERE email = ? AND password = ?;";
+
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(query)) {
+            preparedStatement.setString(1, email);
+            preparedStatement.setString(2, password);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String codiceFiscale = resultSet.getString("codicefiscale");
+                    String nome = resultSet.getString("nome");
+                    String cognome = resultSet.getString("cognome");
+                    String telefono = resultSet.getString("telefono");
+                    String ruol = resultSet.getString("ruol");
+
+                    LocalDate dataNascita = null;
+                    if (resultSet.getDate("datanascita") != null) {
+                        dataNascita = resultSet.getDate("datanascita").toLocalDate();
+                    }
+
+                    switch (ruol) {
+                        case "Admin":
+                            return new Admin(codiceFiscale, nome, cognome, email, telefono, password, dataNascita);
+                        case "Staff":
+                            return new Staff(codiceFiscale, nome, cognome, email, telefono, password, dataNascita,
+                                    resultSet.getString("qualifica"), resultSet.getString("iban"),
+                                    RuoloStaff.valueOf(resultSet.getString("ruolo")));
+                        default:
+                            String via = resultSet.getString("via");
+                            String cap = resultSet.getString("cap");
+                            String stato = resultSet.getString("stato_account");
+                            int numCivico = 0;
+                            String civo = resultSet.getString("civo");
+                            if (civo != null) {
+                                try {
+                                    numCivico = Integer.parseInt(civo.trim());
+                                } catch (NumberFormatException ignored) {
+                                }
+                            }
+                            return new Cliente(codiceFiscale, nome, cognome, email, telefono, password, dataNascita,
+                                    via, numCivico, cap, StatoAccount.valueOf(stato.toUpperCase()));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Errore critico durante il login nel DB: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+
         return null;
     }
 

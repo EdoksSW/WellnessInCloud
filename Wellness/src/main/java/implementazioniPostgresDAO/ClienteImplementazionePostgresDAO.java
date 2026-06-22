@@ -70,7 +70,12 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     @Override
     public Carrello ottieniCarrello(String codiceFiscaleCliente)
     {
-        return null;
+        String query="SELECT" +
+                "id_prodotto," +
+                "prodotto.nome," +
+                "prezzo," +
+                "categoria," +
+                "giacenza"
     }
 
     @Override

@@ -31,11 +31,11 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
     public Utente loginDB(String email, String password) {
         String query =
                 "WITH utenti AS (" +
-                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civo, cap, stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Cliente' AS ruol FROM cliente " +
+                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civico, cap, stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Cliente' AS ruol FROM cliente " +
                 "  UNION ALL " +
-                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civo, cap, NULL AS stato_account, iban, ruolo, qualifica, 'Staff' AS ruol FROM staff " +
+                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civico, cap, NULL AS stato_account, iban, ruolo, qualifica, 'Staff' AS ruol FROM staff " +
                 "  UNION ALL " +
-                "  SELECT email, password, codicefiscale, nome, cognome, NULL AS telefono, datanascita, NULL AS via, NULL AS civo, NULL AS cap, NULL AS stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Admin' AS ruol FROM admin " +
+                "  SELECT email, password, codicefiscale, nome, cognome, NULL AS telefono, datanascita, NULL AS via, NULL AS civico, NULL AS cap, NULL AS stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Admin' AS ruol FROM admin " +
                 ") " +
                 "SELECT * FROM utenti WHERE email = ? AND password = ?;";
 
@@ -68,10 +68,10 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
                             String cap = resultSet.getString("cap");
                             String stato = resultSet.getString("stato_account");
                             int numCivico = 0;
-                            String civo = resultSet.getString("civo");
-                            if (civo != null) {
+                            String civico = resultSet.getString("civico");
+                            if (civico != null) {
                                 try {
-                                    numCivico = Integer.parseInt(civo.trim());
+                                    numCivico = Integer.parseInt(civico.trim());
                                 } catch (NumberFormatException ignored) {
                                 }
                             }

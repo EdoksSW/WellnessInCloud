@@ -26,7 +26,7 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
             e.printStackTrace();
         }
     }
-    
+
     @Override
     public Utente loginDB(String email, String password) {
         String query =

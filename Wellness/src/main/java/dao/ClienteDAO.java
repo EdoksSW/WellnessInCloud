@@ -13,7 +13,7 @@ public interface ClienteDAO
     Cliente trovaPerCodiceFiscale(String codiceFiscale);
 
     //Recupero l'entità Carrello associata al cliente per visualizzare i prodotti salvati.
-    Carrello ottieniCarrello(String codiceFiscaleCliente);
+    Carrello ottieniCarrello(Cliente cliente);
 
     //Aggiorno il carrello nel DB
     boolean agiornaCarrello(String codiceFiscaleCliente, Carrello carrello);

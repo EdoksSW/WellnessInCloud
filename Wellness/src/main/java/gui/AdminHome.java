@@ -23,13 +23,15 @@ public class AdminHome {
         btnGestionePrezzario.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Gestione Prezzario!");
+                new GestionePrezzario(controller, frame);
+                frame.setVisible(false);
             }
         });
         bntGestioneCorsi.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Gestione Corsi!");
+                new GestioneCorsi(controller, frame);
+                frame.setVisible(false);
             }
         });
         btnVisualizzaStaff.addActionListener(new ActionListener() {

@@ -2,13 +2,18 @@ package controller;
 import dao.UtenteDAO;
 import dao.StaffDAO;
 import dao.TurnoDAO;
+import dao.CorsoDAO;
+import dao.ProdottoDAO;
 import implementazioniPostgresDAO.UtenteImplementazionePostgresDAO;
 import implementazioniPostgresDAO.StaffImplementazionePostgresDAO;
 import implementazioniPostgresDAO.TurnoImplementazionePostgresDAO;
+import implementazioniPostgresDAO.CorsoImplementazionePostgresDAO;
+import implementazioniPostgresDAO.ProdottoImplementazionePostgresDAO;
 import model.utenti.*;
 import model.enums.*;
 import model.commerce.*;
 import model.logistica.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -62,6 +67,51 @@ public class Controller
     public boolean rimuoviTurno(int idTurno) {
         TurnoDAO turnoDAO = new TurnoImplementazionePostgresDAO();
         return turnoDAO.rimuoviTurno(idTurno);
+    }
+
+    public ArrayList<Staff> getListaIstruttori() {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.getIstruttori();
+    }
+
+    public ArrayList<Corso> getListaCorsi() {
+        CorsoDAO corsoDAO = new CorsoImplementazionePostgresDAO();
+        return corsoDAO.getAllCorsi();
+    }
+
+    public boolean aggiungiCorso(String nome, String descrizione, String cfStaff) {
+        CorsoDAO corsoDAO = new CorsoImplementazionePostgresDAO();
+        return corsoDAO.aggiungiCorso(nome, descrizione, cfStaff);
+    }
+
+    public boolean modificaCorso(int idCorso, String nome, String descrizione, String cfStaff) {
+        CorsoDAO corsoDAO = new CorsoImplementazionePostgresDAO();
+        return corsoDAO.modificaCorso(idCorso, nome, descrizione, cfStaff);
+    }
+
+    public boolean rimuoviCorso(int idCorso) {
+        CorsoDAO corsoDAO = new CorsoImplementazionePostgresDAO();
+        return corsoDAO.rimuoviCorso(idCorso);
+    }
+
+    public ArrayList<Prodotto> getListaProdotti() {
+        ProdottoDAO prodottoDAO = new ProdottoImplementazionePostgresDAO();
+        return prodottoDAO.getAllProdotti();
+    }
+
+    public boolean aggiungiProdotto(String nome, BigDecimal prezzo, int giacenza, String categoria) {
+        ProdottoDAO prodottoDAO = new ProdottoImplementazionePostgresDAO();
+        return prodottoDAO.aggiungiProdotto(nome, prezzo, giacenza, categoria);
+    }
+
+    public boolean modificaProdotto(int idProdotto, String nome, BigDecimal prezzo, int giacenza, String categoria) {
+        ProdottoDAO prodottoDAO = new ProdottoImplementazionePostgresDAO();
+        return prodottoDAO.modificaProdotto(idProdotto, nome, prezzo, giacenza, categoria);
+    }
+
+    public boolean rimuoviProdotto(int idProdotto) {
+        ProdottoDAO prodottoDAO = new ProdottoImplementazionePostgresDAO();
+        return prodottoDAO.rimuoviProdotto(idProdotto);
     }
 
     public String messaggioAccessoNegato(Utente u) {

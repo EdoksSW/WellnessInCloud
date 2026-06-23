@@ -27,75 +27,15 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
         }
     }
 
-    /*
-    @Override
-    public Utente loginDB(String email, String password) {
-        String query= "WITH Utente AS (" +
-                "SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, eta, via, civico, cap, stato_account, NULL AS qualifica, NULL AS iban, NULL AS ruolo, 'Cliente' AS ruol FROM Cliente " +
-                "  UNION ALL " +
-                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, eta, via, civico, cap, NULL, qualifica, iban, ruolo, 'Staff' AS ruol FROM Staff " +
-                "  UNION ALL " +
-                "  SELECT email, password, codicefiscale, nome, cognome, NULL, datanascita, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Admin' AS ruol FROM Admin" +
-                ") " +
-                "SELECT ruolo " +
-                "FROM Utente " +
-                "WHERE email=? AND password = ?;";
-
-        try(PreparedStatement preparedStatement=this.connection.prepareStatement(query)) {
-            preparedStatement.setString(1,email);
-            preparedStatement.setString(2,password);
-
-            try(ResultSet resultSet=preparedStatement.executeQuery()){
-                if(resultSet.next())
-                {
-                    String nome = resultSet.getString("nome");
-                    String cognome = resultSet.getString("cognome");
-                    String codicefiscale = resultSet.getString("codice_fiscale");
-                    String telefono = resultSet.getString("telefono");
-
-                    LocalDate datanascita = null;
-                    if (resultSet.getDate("data_nascita") != null) {
-                        datanascita = resultSet.getDate("data_nascita").toLocalDate();
-                    }
-
-                    String ruolo = resultSet.getString("ruolo");
-                    int eta = resultSet.getInt("eta");
-                    String via = resultSet.getString("via");
-                    int civico = resultSet.getInt("civico");
-                    String cap = resultSet.getString("cap");
-                    String stato_acc=resultSet.getString("stato_account");
-                    String ruol = resultSet.getString("ruol");
-                    if(ruol.equals("Admin")) return new Admin(codicefiscale, nome, cognome, email, "?", password, datanascita);
-                    else if(ruol.equals("Cliente"))
-                    {
-                        return new Cliente(codicefiscale, nome, cognome, email, telefono, password, datanascita, via, civico, cap, StatoAccount.valueOf(stato_acc.toUpperCase()));
-                    }
-                    else
-                    {
-                        return new Staff(codicefiscale, nome, cognome, email, telefono, password,datanascita, resultSet.getString("qualifica"),cap,RuoloStaff.valueOf(ruolo));
-                    }
-                }
-            }
-        }catch (SQLException e)
-        {
-            System.err.println("Errore critico durante il login nel DB: "+ e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-
-        return null;
-    }
-    */
-
     @Override
     public Utente loginDB(String email, String password) {
         String query =
                 "WITH utenti AS (" +
-                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civo, cap, stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Cliente' AS ruol FROM cliente " +
+                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civico, cap, stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Cliente' AS ruol FROM cliente " +
                 "  UNION ALL " +
-                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civo, cap, NULL AS stato_account, iban, ruolo, qualifica, 'Staff' AS ruol FROM staff " +
+                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civico, cap, NULL AS stato_account, iban, ruolo, qualifica, 'Staff' AS ruol FROM staff " +
                 "  UNION ALL " +
-                "  SELECT email, password, codicefiscale, nome, cognome, NULL AS telefono, datanascita, NULL AS via, NULL AS civo, NULL AS cap, NULL AS stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Admin' AS ruol FROM admin " +
+                "  SELECT email, password, codicefiscale, nome, cognome, NULL AS telefono, datanascita, NULL AS via, NULL AS civico, NULL AS cap, NULL AS stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Admin' AS ruol FROM admin " +
                 ") " +
                 "SELECT * FROM utenti WHERE email = ? AND password = ?;";
 
@@ -128,10 +68,10 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
                             String cap = resultSet.getString("cap");
                             String stato = resultSet.getString("stato_account");
                             int numCivico = 0;
-                            String civo = resultSet.getString("civo");
-                            if (civo != null) {
+                            String civico = resultSet.getString("civico");
+                            if (civico != null) {
                                 try {
-                                    numCivico = Integer.parseInt(civo.trim());
+                                    numCivico = Integer.parseInt(civico.trim());
                                 } catch (NumberFormatException ignored) {
                                 }
                             }

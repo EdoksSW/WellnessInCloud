@@ -51,6 +51,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                  String via=resultSet.getString("via");
                  int numCivico=resultSet.getInt("civico");
                  String cap=resultSet.getString("cap");
+                 int eta=resultSet.getInt("eta");
 
                  String stato_acc=resultSet.getString("stato_account");
                  StatoAccount statoAccount=StatoAccount.valueOf(stato_acc.trim().toUpperCase());
@@ -60,7 +61,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                  {
                      dataNascita=resultSet.getDate("datanascita").toLocalDate();
                  }
-                 return new Cliente(codiceFiscale,nome, cognome, email, telefono, password, dataNascita, via, numCivico, cap, statoAccount);
+                 return new Cliente(codiceFiscale,nome, cognome, email, telefono, password, dataNascita, eta, via, numCivico, cap, statoAccount);
             }
         }catch(SQLException e) {
             System.out.println("Errore SQL in trovaPerCodiceFiscale: " + e.getMessage());

@@ -10,8 +10,8 @@ public interface UtenteDAO {
     Utente loginDB(String email, String password);
 
     boolean registraClienteDB(String cf, String nome, String cognome, String email, String telefono,
-                              LocalDate dataNascita, String password, String indirizzo, int numCivico, String cap);
+                              LocalDate dataNascita, int eta, String password, String indirizzo, int numCivico, String cap);
 
     boolean registraStaffDB(String cf, String nome, String cognome, String email, String telefono,
-                            LocalDate dataNascita, String password, String qualifica, String iban, RuoloStaff ruolo);
+                            LocalDate dataNascita, int eta, String password, String qualifica, String iban, RuoloStaff ruolo);
 }

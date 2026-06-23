@@ -36,7 +36,7 @@ public class CorsoImplementazionePostgresDAO implements CorsoDAO {
                         rs.getString("cf_staff"),
                         rs.getString("staff_nome"),
                         rs.getString("staff_cognome"),
-                        null, null, null, null, null, null,
+                        null, null, null, null, 0, null, null,
                         RuoloStaff.valueOf(rs.getString("staff_ruolo"))
                 );
                 daRestituire.add(new Corso(

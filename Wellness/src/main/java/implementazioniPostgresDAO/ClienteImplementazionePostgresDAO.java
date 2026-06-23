@@ -3,10 +3,12 @@ package implementazioniPostgresDAO;
 import dao.ClienteDAO;
 import database.ConnessioneDatabase;
 import model.commerce.Carrello;
+import model.commerce.Prodotto;
 import model.enums.StatoAccount;
 import model.logistica.Prenotazione;
 import model.utenti.Cliente;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -68,15 +70,17 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     }
 
     @Override
-    public Carrello ottieniCarrello(String codiceFiscaleCliente)
+    public Carrello ottieniCarrello(Cliente clienteSelezionato)
     {
         String query = "SELECT " +
                 "prodotto.id_prodotto, " +
                 "prodotto.nome, " +
                 "prodotto.categoria, " +
                 "dettaglio_carrello.quantita, " + // Quantità reale nel carrello
-                "prodotto.giacenza, " +            // Rimanenza in magazzino
-                "carrello.totale " +
+                "prodotto.giacenza," +
+                "prodotto.prezzo, " +            // Rimanenza in magazzino
+                "carrello.totale, " +
+                "carrello.id_carrello " +
                 "FROM cliente " +
                 "JOIN carrello ON cliente.id_carrello = carrello.id_carrello " +
                 "JOIN dettaglio_carrello ON carrello.id_carrello = dettaglio_carrello.id_carrello " +
@@ -87,17 +91,33 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
 
         try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
         {
-            preparedStatement.setString(1,codiceFiscaleCliente);
+            preparedStatement.setString(1,clienteSelezionato.getCodiceFiscale());
 
             try(ResultSet resultSet= preparedStatement.executeQuery())
             {
                 while(resultSet.next())
                 {
-                    double totaleCarrello=resultSet.getDouble("totale");
+                    if(carrello==null)
+                    {
+                        carrello=new Carrello(clienteSelezionato, resultSet.getInt("id_carrello"), resultSet.getBigDecimal("totale"));
+                    }
+                        int id_prodotto=resultSet.getInt("id_prodotto");
+                        String nome=resultSet.getString("nome");
+                        String categoria=resultSet.getString("categoria");
+                        BigDecimal prezzo= resultSet.getBigDecimal("prezzo");
+                        int giacenza=resultSet.getInt("giacenza");
+                        Prodotto prodotto=new Prodotto(id_prodotto, nome, prezzo, giacenza, categoria);
+                        carrello.aggiungiProdotto(prodotto, resultSet.getInt("quantita"));
 
                 }
             }
+        }catch(SQLException e)
+        {
+            System.out.println("Errore ottenimento del carrello-> "+e.getMessage());
+            e.printStackTrace();
+            return null;
         }
+        return carrello;
     }
 
     @Override

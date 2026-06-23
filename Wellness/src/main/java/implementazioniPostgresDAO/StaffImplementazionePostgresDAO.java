@@ -27,11 +27,12 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
     @Override
     public ArrayList<Staff> getAllStaff() {
         ArrayList<Staff> daRestituire = new ArrayList<>();
-        String query = "SELECT codicefiscale, nome, cognome, email, password, telefono, datanascita, qualifica, iban, ruolo FROM staff ORDER BY cognome, nome;";
+        String query = "SELECT codicefiscale, nome, cognome, email, password, telefono, datanascita, eta, qualifica, iban, ruolo FROM staff ORDER BY cognome, nome;";
         try (PreparedStatement ps = this.connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 LocalDate dataNascita = rs.getDate("datanascita") != null ? rs.getDate("datanascita").toLocalDate() : null;
+                int eta = rs.getInt("eta");
                 Staff s = new Staff(
                         rs.getString("codicefiscale"),
                         rs.getString("nome"),
@@ -40,6 +41,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                         rs.getString("telefono"),
                         rs.getString("password"),
                         dataNascita,
+                        eta,
                         rs.getString("qualifica"),
                         rs.getString("iban"),
                         RuoloStaff.valueOf(rs.getString("ruolo"))
@@ -56,11 +58,12 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
     @Override
     public ArrayList<Staff> getIstruttori() {
         ArrayList<Staff> daRestituire = new ArrayList<>();
-        String query = "SELECT codicefiscale, nome, cognome, email, password, telefono, datanascita, qualifica, iban, ruolo FROM staff WHERE ruolo = 'ISTRUTTORE' ORDER BY cognome, nome;";
+        String query = "SELECT codicefiscale, nome, cognome, email, password, telefono, datanascita, eta, qualifica, iban, ruolo FROM staff WHERE ruolo = 'ISTRUTTORE' ORDER BY cognome, nome;";
         try (PreparedStatement ps = this.connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 LocalDate dataNascita = rs.getDate("datanascita") != null ? rs.getDate("datanascita").toLocalDate() : null;
+                int eta = rs.getInt("eta");
                 Staff s = new Staff(
                         rs.getString("codicefiscale"),
                         rs.getString("nome"),
@@ -69,6 +72,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                         rs.getString("telefono"),
                         rs.getString("password"),
                         dataNascita,
+                        eta,
                         rs.getString("qualifica"),
                         rs.getString("iban"),
                         RuoloStaff.valueOf(rs.getString("ruolo"))

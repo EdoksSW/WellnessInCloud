@@ -31,11 +31,11 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
     public Utente loginDB(String email, String password) {
         String query =
                 "WITH utenti AS (" +
-                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civico, cap, stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Cliente' AS ruol FROM cliente " +
+                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, eta, via, civico, cap, stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Cliente' AS ruol FROM cliente " +
                 "  UNION ALL " +
-                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, via, civico, cap, NULL AS stato_account, iban, ruolo, qualifica, 'Staff' AS ruol FROM staff " +
+                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, eta, via, civico, cap, NULL AS stato_account, iban, ruolo, qualifica, 'Staff' AS ruol FROM staff " +
                 "  UNION ALL " +
-                "  SELECT email, password, codicefiscale, nome, cognome, NULL AS telefono, datanascita, NULL AS via, NULL AS civico, NULL AS cap, NULL AS stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Admin' AS ruol FROM admin " +
+                "  SELECT email, password, codicefiscale, nome, cognome, NULL AS telefono, datanascita, NULL AS eta, NULL AS via, NULL AS civico, NULL AS cap, NULL AS stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Admin' AS ruol FROM admin " +
                 ") " +
                 "SELECT * FROM utenti WHERE email = ? AND password = ?;";
 
@@ -56,26 +56,21 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
                         dataNascita = resultSet.getDate("datanascita").toLocalDate();
                     }
 
+                    int eta = resultSet.getInt("eta");
+
                     switch (ruol) {
                         case "Admin":
                             return new Admin(codiceFiscale, nome, cognome, email, telefono, password, dataNascita);
                         case "Staff":
-                            return new Staff(codiceFiscale, nome, cognome, email, telefono, password, dataNascita,
+                            return new Staff(codiceFiscale, nome, cognome, email, telefono, password, dataNascita, eta,
                                     resultSet.getString("qualifica"), resultSet.getString("iban"),
                                     RuoloStaff.valueOf(resultSet.getString("ruolo")));
                         default:
                             String via = resultSet.getString("via");
                             String cap = resultSet.getString("cap");
                             String stato = resultSet.getString("stato_account");
-                            int numCivico = 0;
-                            String civico = resultSet.getString("civico");
-                            if (civico != null) {
-                                try {
-                                    numCivico = Integer.parseInt(civico.trim());
-                                } catch (NumberFormatException ignored) {
-                                }
-                            }
-                            return new Cliente(codiceFiscale, nome, cognome, email, telefono, password, dataNascita,
+                            int numCivico = resultSet.getInt("civico");
+                            return new Cliente(codiceFiscale, nome, cognome, email, telefono, password, dataNascita, eta,
                                     via, numCivico, cap, StatoAccount.valueOf(stato.toUpperCase()));
                     }
                 }
@@ -91,13 +86,13 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
 
     @Override
     public boolean registraClienteDB(String cf, String nome, String cognome, String email, String telefono,
-                                     LocalDate dataNascita, String password, String indirizzo, int numCivico, String cap) {
+                                     LocalDate dataNascita, int eta, String password, String indirizzo, int numCivico, String cap) {
         return false;
     }
 
     @Override
     public boolean registraStaffDB(String cf, String nome, String cognome, String email, String telefono,
-                                   LocalDate dataNascita, String password, String qualifica, String iban, RuoloStaff ruolo) {
+                                   LocalDate dataNascita, int eta, String password, String qualifica, String iban, RuoloStaff ruolo) {
         return false;
     }
 }

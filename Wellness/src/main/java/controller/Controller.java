@@ -128,24 +128,24 @@ public class Controller
     }
 
     public boolean registraCliente(Utente esecutore, String cf, String nome, String cognome, String email, String telefono,
-                                   LocalDate dataNascita, String password, String indirizzo, int numCivico, String cap) {
+                                   LocalDate dataNascita, int eta, String password, String indirizzo, int numCivico, String cap) {
         if (esecutore instanceof Staff || esecutore instanceof Admin) {
             for (Utente u : utenti) {
                 if (u.getEmail().equalsIgnoreCase(email) || u.getCodiceFiscale().equalsIgnoreCase(cf)) return false;
             }
-            utenti.add(new Cliente(cf, nome, cognome, email, telefono, password, dataNascita, indirizzo, numCivico, cap, StatoAccount.ATTIVO));
+            utenti.add(new Cliente(cf, nome, cognome, email, telefono, password, dataNascita, eta, indirizzo, numCivico, cap, StatoAccount.ATTIVO));
             return true;
         }
         return false;
     }
 
     public boolean registraStaff(Utente esecutore, String cf, String nome, String cognome, String email, String telefono,
-                                 LocalDate dataNascita, String password, String qualifica, String iban, RuoloStaff ruolo) {
+                                 LocalDate dataNascita, int eta, String password, String qualifica, String iban, RuoloStaff ruolo) {
         if (esecutore instanceof Admin) {
             for (Utente u : utenti) {
                 if (u.getEmail().equalsIgnoreCase(email) || u.getCodiceFiscale().equalsIgnoreCase(cf)) return false;
             }
-            utenti.add(new Staff(cf, nome, cognome, email, telefono, password, dataNascita, qualifica, iban, ruolo));
+            utenti.add(new Staff(cf, nome, cognome, email, telefono, password, dataNascita, eta, qualifica, iban, ruolo));
             return true;
         }
         return false;

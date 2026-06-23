@@ -6,4 +6,6 @@ import java.util.ArrayList;
 
 public interface StaffDAO {
     ArrayList<Staff> getAllStaff();
+
+    ArrayList<Staff> getIstruttori();
 }

@@ -70,12 +70,34 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     @Override
     public Carrello ottieniCarrello(String codiceFiscaleCliente)
     {
-        String query="SELECT" +
-                "id_prodotto," +
-                "prodotto.nome," +
-                "prezzo," +
-                "categoria," +
-                "giacenza"
+        String query = "SELECT " +
+                "prodotto.id_prodotto, " +
+                "prodotto.nome, " +
+                "prodotto.categoria, " +
+                "dettaglio_carrello.quantita, " + // Quantità reale nel carrello
+                "prodotto.giacenza, " +            // Rimanenza in magazzino
+                "carrello.totale " +
+                "FROM cliente " +
+                "JOIN carrello ON cliente.id_carrello = carrello.id_carrello " +
+                "JOIN dettaglio_carrello ON carrello.id_carrello = dettaglio_carrello.id_carrello " +
+                "JOIN prodotto ON dettaglio_carrello.id_prodotto = prodotto.id_prodotto " +
+                "WHERE cliente.codicefiscale = ?";
+
+        Carrello carrello=null;
+
+        try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
+        {
+            preparedStatement.setString(1,codiceFiscaleCliente);
+
+            try(ResultSet resultSet= preparedStatement.executeQuery())
+            {
+                while(resultSet.next())
+                {
+                    double totaleCarrello=resultSet.getDouble("totale");
+
+                }
+            }
+        }
     }
 
     @Override

@@ -124,7 +124,72 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     @Override
     public boolean agiornaCarrello(String codiceFiscaleCliente, Carrello carrello)
     {
-        return false;
+        // Aggiorna il totale nella tabella del carrello
+        String queryCarrello="UPDATE carrello SET totale=? WHERE id_carrello=?;";
+
+        // Cancella i vecchi dettagli
+        String queryCancellaDettagli="DELETE FROM dettaglio_carrello WHERE id_carrello=?;";
+
+        // Inserisce i nuovi dettagli aggionrati
+        String queryInserisciDettaglio="INSERT INTO dettaglio_carrello (id_carrello, id_prodotto, quantita) VALUES(?,?,?);";
+
+        try
+        {
+            //Disabilito il commit automantico per una transazione sicura
+            this.connection.setAutoCommit(false);
+
+            //Aggiornamento totale del carrello
+            try(PreparedStatement psCarrello=this.connection.prepareStatement(queryCarrello))
+            {
+                psCarrello.setBigDecimal(1,carrello.getTotale());
+                psCarrello.setInt(2, carrello.getId_carrello());
+                psCarrello.executeUpdate();
+            }
+
+            //Cancelliamo i vecchi dettagli di questo carrello
+            try(PreparedStatement psCancella=this.connection.prepareStatement(queryCancellaDettagli))
+            {
+                psCancella.setInt(1,carrello.getId_carrello());
+                psCancella.executeUpdate();
+            }
+
+            // Reinseriamo i prdototti correnti con le loro nuove quantità
+            try(PreparedStatement psInserisci=this.connection.prepareStatement(queryInserisciDettaglio))
+            {
+                //Ciclo la mappa dei prodotti (o la lista insomma) per prendere ogni elemento
+                for(Prodotto prodotto: carrello.getProdotti().keySet())
+                {
+                    int quantita=carrello.getProdotti().get(prodotto);
+                    psInserisci.setInt(1, carrello.getId_carrello());
+                    psInserisci.setInt(2, prodotto.getId_prodotto());
+                    psInserisci.setInt(3, quantita);
+
+                    //Acculimuliamo il comando dentro al Batch così da eseguire tutto insieme dopo
+                    psInserisci.addBatch();
+                }
+                //Esegue tutti gli inserimenti insieme
+                psInserisci.executeBatch();
+            }
+
+            //Se tutto è andato a buon fin, salviamo definitivamente sul DB
+            this.connection.commit(); //Rende definitive tutte le modifiche
+            this.connection.setAutoCommit(true); //Da adesso in poi tutto verrà modificato in runtime
+            return true;
+        }catch(SQLException e)
+        {
+            //In caso di errore, annulliamo tutto per non lasciare il carrello a metà
+            try
+            {
+                this.connection.rollback();
+                this.connection.setAutoCommit(true);
+            }catch(SQLException ex)
+            {
+                ex.printStackTrace();
+            }
+            System.out.println("Errore durante l'aggiornamento del carrello-> " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override

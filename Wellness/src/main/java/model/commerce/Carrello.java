@@ -32,5 +32,21 @@ public class Carrello {
     {
         this.prodotti.put(prodotto, quantita);
     }
+
+    public int getId_carrello() {
+        return id_carrello;
+    }
+
+    public void setId_carrello(int id_carrello) {
+        this.id_carrello = id_carrello;
+    }
+
+    public Map<Prodotto, Integer> getProdotti() {
+        return prodotti;
+    }
+
+    public void setProdotti(Map<Prodotto, Integer> prodotti) {
+        this.prodotti = prodotti;
+    }
 }
 

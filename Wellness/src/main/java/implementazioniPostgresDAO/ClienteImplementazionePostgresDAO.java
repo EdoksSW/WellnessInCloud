@@ -3,8 +3,11 @@ package implementazioniPostgresDAO;
 import dao.ClienteDAO;
 import database.ConnessioneDatabase;
 import model.commerce.Carrello;
+import model.commerce.Iscrizione;
 import model.commerce.Prodotto;
 import model.enums.StatoAccount;
+import model.enums.StatoPrenotazione;
+import model.logistica.Lezione;
 import model.logistica.Prenotazione;
 import model.utenti.Cliente;
 
@@ -14,6 +17,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClienteImplementazionePostgresDAO implements ClienteDAO
@@ -193,26 +198,113 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     }
 
     @Override
-    public boolean acquistaAbbonamento(String codiceFiscaleCliente, int idAbbonamento, LocalDate dataInizio, double prezzoPagato)
+    public boolean effettuaIscrizione(Iscrizione iscrizione)
     {
-        return false;
+        String query="INSERT INTO iscrizione (data_inizio, data_fine, cf_cliente, id_titolo) VALUES(?,?,?,?);";
+
+        try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
+        {
+            preparedStatement.setDate(1, java.sql.Date.valueOf(iscrizione.getDataInizio()));
+            preparedStatement.setDate(2, java.sql.Date.valueOf(iscrizione.getDataFine()));
+            preparedStatement.setString(3, iscrizione.getCliente().getCodiceFiscale());
+            preparedStatement.setInt(4, iscrizione.getTitoloIngresso().getId_titoloIngresso());
+
+            int righeInserite=preparedStatement.executeUpdate();
+            return righeInserite>0;
+        }catch (SQLException e)
+        {
+            System.out.println("Errore nel DAO della funzione effettuaIScrizione-> "+e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
-    public boolean prenotaLezione(String codiceFiscaleCliente, int idLezione, LocalDate dataPrenotazione)
+    public boolean prenotaLezione(Prenotazione prenotazione)
     {
-        return false;
+        String query="INSERT INTO prenotazione (data_pren, ora_pren, stato_prenotazione, cf_cliente, id_lezione) VALUES(?, ?, ?, ?, ?)";
+        try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
+        {
+            preparedStatement.setDate(1, java.sql.Date.valueOf(prenotazione.getDataPren()));
+            preparedStatement.setTime(2, java.sql.Time.valueOf(prenotazione.getOraPren()));
+            preparedStatement.setString(3, prenotazione.getStato().name()); //.name() per farla breve converte l'oggetto enumerazione in una strinfa di testo "LISTA_ATTESA". E' una funzione che offre java
+
+            //per chiavi esterne
+            preparedStatement.setString(4, prenotazione.getCliente().getCodiceFiscale());
+            preparedStatement.setInt(5, prenotazione.getLezione().getId_lezione());
+
+            int righe=preparedStatement.executeUpdate();
+            return righe>0;
+        }catch(SQLException e)
+        {
+            System.out.println("Errore in prenotazione-> "+ e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
-    public boolean annullaPrenotazione(String codiceFiscaleCliente, int idPrenotazione)
+    public boolean annullaPrenotazione(int id_prenotazione)
     {
-        return false;
+        String query = "UPDATE prenotazione SET stato_prenotazione= ? WHERE id_prenotazione=?;";
+        try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
+        {
+            preparedStatement.setString(1, StatoPrenotazione.DISDETTA.name());
+            preparedStatement.setInt(2, id_prenotazione);
+
+            int righe=preparedStatement.executeUpdate();
+            return righe>0;
+        }catch (SQLException e)
+        {
+            System.out.println("Errore in annullaPrenotazione-> "+e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
-    public List<Prenotazione> ottieniPrenotazioneCliente(String codiceFiscaleCliente)
+    public List<Prenotazione> ottieniPrenotazioniCliente(Cliente cliente)
     {
-        return List.of();
+        List<Prenotazione> listaPrenotazioni=new  ArrayList<>();
+        String query = "SELECT " +
+                "p.id_prenotazione, " +
+                "p.data_pren, " +
+                "p.ora_pren, " +
+                "p.stato.prenotazione, " +
+                "l.id_lezione, " +
+                "l.nome " +
+                "FROM prenotazione p" +
+                "JOIN lezione l ON p.id_lezione = l.id_lezione " +
+                "WHERE p.cf_cliente = ? AND p.stato_prenotazione != 'DISTETTA' " +
+                "ORDER BY p.data_pren DESC, p.ora_pren DESC;";
+        try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
+        {
+            preparedStatement.setString(1, cliente.getCodiceFiscale());
+
+            try(ResultSet resultSet=preparedStatement.executeQuery())
+            {
+                while(resultSet.next())
+                {
+                    int idLezione = resultSet.getInt("id_lezione");
+                    String nomeLezione = resultSet.getString("nome");
+                    Lezione lezione = new Lezione(idLezione, nomeLezione);
+
+                    int idPrenotazione = resultSet.getInt("id_prenotazione");
+                    LocalDate dataPren = resultSet.getDate("data_pren").toLocalDate();
+                    LocalTime oraPren = resultSet.getTime("ora_pren").toLocalTime();
+
+                    String stato_prenotazione=resultSet.getString("stato_prenotazione");
+                    StatoPrenotazione statoPrenotazione=StatoPrenotazione.valueOf(stato_prenotazione);
+
+                    Prenotazione prenotazione=new Prenotazione(dataPren, oraPren, statoPrenotazione, cliente, lezione);
+                    listaPrenotazioni.add(prenotazione);
+                }
+            }
+        }catch (SQLException e)
+        {
+            System.out.println("Errore in ottieniPrenotazioniCliente-> "+e.getMessage());
+            e.printStackTrace();
+        }
+        return  listaPrenotazioni;
     }
 }

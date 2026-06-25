@@ -1,6 +1,7 @@
 package dao;
 
 import model.commerce.Carrello;
+import model.commerce.Iscrizione;
 import model.logistica.Prenotazione;
 import model.utenti.Cliente;
 
@@ -20,14 +21,14 @@ public interface ClienteDAO
 
     //RELAZIONE: CLIENTE - ABBONAMENTO / ISCRIZIONE
     //Associo un Cliente ad un Abbonamento
-    boolean acquistaAbbonamento(String codiceFiscaleCliente, int idAbbonamento, LocalDate dataInizio, double prezzoPagato);
+    boolean effettuaIscrizione(Iscrizione iscrizione);
 
     //Registra l'ingresso di un cliente a una determinata lezione/sala
-    boolean prenotaLezione(String codiceFiscaleCliente, int idLezione, LocalDate dataPrenotazione);
+    boolean prenotaLezione(Prenotazione prenotazione);
 
     //Rimuove una prenotazione eggettuata in precedenza
-    boolean annullaPrenotazione(String codiceFiscaleCliente, int idPrenotazione);
+    boolean annullaPrenotazione(int idPrenotazione);
 
     //Elenca di tutte le prenotazioni del Cliente
-    List<Prenotazione> ottieniPrenotazioneCliente(String codiceFiscaleCliente);
+    List<Prenotazione> ottieniPrenotazioniCliente(Cliente cliente);
 }

@@ -2,6 +2,7 @@ package implementazioniPostgresDAO;
 
 import dao.ProdottoDAO;
 import database.ConnessioneDatabase;
+import model.commerce.Categoria;
 import model.commerce.Prodotto;
 
 import java.math.BigDecimal;
@@ -9,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 
 public class ProdottoImplementazionePostgresDAO implements ProdottoDAO {
@@ -26,16 +28,22 @@ public class ProdottoImplementazionePostgresDAO implements ProdottoDAO {
     @Override
     public ArrayList<Prodotto> getAllProdotti() {
         ArrayList<Prodotto> daRestituire = new ArrayList<>();
-        String query = "SELECT id_prodotto, nome, prezzo, giacenza, categoria FROM prodotto ORDER BY nome;";
+        String query = "SELECT p.id_prodotto, p.nome, p.prezzo, p.giacenza, p.id_categoria, c.cat_prodotto AS categoria_nome " +
+                "FROM prodotto p LEFT JOIN categoria c ON p.id_categoria = c.id_categoria ORDER BY p.nome;";
         try (PreparedStatement ps = this.connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
+                Categoria categoria = null;
+                int idCategoria = rs.getInt("id_categoria");
+                if (!rs.wasNull()) {
+                    categoria = new Categoria(idCategoria, rs.getString("categoria_nome"));
+                }
                 daRestituire.add(new Prodotto(
                         rs.getInt("id_prodotto"),
                         rs.getString("nome"),
                         rs.getBigDecimal("prezzo"),
                         rs.getInt("giacenza"),
-                        rs.getString("categoria")
+                        categoria
                 ));
             }
         } catch (SQLException e) {
@@ -46,13 +54,13 @@ public class ProdottoImplementazionePostgresDAO implements ProdottoDAO {
     }
 
     @Override
-    public boolean aggiungiProdotto(String nome, BigDecimal prezzo, int giacenza, String categoria) {
-        String query = "INSERT INTO prodotto (nome, prezzo, giacenza, categoria) VALUES (?, ?, ?, ?);";
+    public boolean aggiungiProdotto(String nome, BigDecimal prezzo, int giacenza, Integer idCategoria) {
+        String query = "INSERT INTO prodotto (nome, prezzo, giacenza, id_categoria) VALUES (?, ?, ?, ?);";
         try (PreparedStatement ps = this.connection.prepareStatement(query)) {
             ps.setString(1, nome);
             ps.setBigDecimal(2, prezzo);
             ps.setInt(3, giacenza);
-            ps.setString(4, categoria);
+            ps.setObject(4, idCategoria, Types.INTEGER);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             System.err.println("Errore durante l'aggiunta del prodotto: " + e.getMessage());
@@ -62,13 +70,13 @@ public class ProdottoImplementazionePostgresDAO implements ProdottoDAO {
     }
 
     @Override
-    public boolean modificaProdotto(int idProdotto, String nome, BigDecimal prezzo, int giacenza, String categoria) {
-        String query = "UPDATE prodotto SET nome = ?, prezzo = ?, giacenza = ?, categoria = ? WHERE id_prodotto = ?;";
+    public boolean modificaProdotto(int idProdotto, String nome, BigDecimal prezzo, int giacenza, Integer idCategoria) {
+        String query = "UPDATE prodotto SET nome = ?, prezzo = ?, giacenza = ?, id_categoria = ? WHERE id_prodotto = ?;";
         try (PreparedStatement ps = this.connection.prepareStatement(query)) {
             ps.setString(1, nome);
             ps.setBigDecimal(2, prezzo);
             ps.setInt(3, giacenza);
-            ps.setString(4, categoria);
+            ps.setObject(4, idCategoria, Types.INTEGER);
             ps.setInt(5, idProdotto);
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {

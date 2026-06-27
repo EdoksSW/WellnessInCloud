@@ -7,9 +7,9 @@ public class Prodotto {
     private String nome;
     private BigDecimal prezzo;
     private int giacenza;
-    private String categoria;
+    private Categoria categoria;
 
-    public Prodotto(int id, String nome, BigDecimal prezzo, int giacenza, String categoria) {
+    public Prodotto(int id, String nome, BigDecimal prezzo, int giacenza, Categoria categoria) {
         this.id = id;
         this.nome = nome;
         this.prezzo = prezzo;
@@ -53,11 +53,11 @@ public class Prodotto {
         this.giacenza = giacenza;
     }
 
-    public String getCategoria() {
+    public Categoria getCategoria() {
         return categoria;
     }
 
-    public void setCategoria(String categoria) {
+    public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
     }
 }

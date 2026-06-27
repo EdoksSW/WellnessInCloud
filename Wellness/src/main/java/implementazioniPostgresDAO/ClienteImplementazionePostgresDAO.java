@@ -3,6 +3,7 @@ package implementazioniPostgresDAO;
 import dao.ClienteDAO;
 import database.ConnessioneDatabase;
 import model.commerce.Carrello;
+import model.commerce.Categoria;
 import model.commerce.Iscrizione;
 import model.commerce.Prodotto;
 import model.enums.StatoAccount;
@@ -81,16 +82,18 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
         String query = "SELECT " +
                 "prodotto.id_prodotto, " +
                 "prodotto.nome, " +
-                "prodotto.categoria, " +
-                "dettaglio_carrello.quantita, " + // Quantità reale nel carrello
+                "prodotto.id_categoria, " +
+                "categoria.cat_prodotto, " +
+                "dettaglio_carrello.quantita, " +
                 "prodotto.giacenza," +
-                "prodotto.prezzo, " +            // Rimanenza in magazzino
+                "prodotto.prezzo, " +
                 "carrello.totale, " +
                 "carrello.id_carrello " +
                 "FROM cliente " +
-                "JOIN carrello ON cliente.id_carrello = carrello.id_carrello " +
+                "JOIN carrello ON carrello.cf_cliente = cliente.codicefiscale " +
                 "JOIN dettaglio_carrello ON carrello.id_carrello = dettaglio_carrello.id_carrello " +
                 "JOIN prodotto ON dettaglio_carrello.id_prodotto = prodotto.id_prodotto " +
+                "LEFT JOIN categoria ON prodotto.id_categoria = categoria.id_categoria " +
                 "WHERE cliente.codicefiscale = ?";
 
         Carrello carrello=null;
@@ -109,9 +112,16 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                     }
                         int id_prodotto=resultSet.getInt("id_prodotto");
                         String nome=resultSet.getString("nome");
-                        String categoria=resultSet.getString("categoria");
                         BigDecimal prezzo= resultSet.getBigDecimal("prezzo");
                         int giacenza=resultSet.getInt("giacenza");
+
+                        Categoria categoria=null;
+                        int idCategoria=resultSet.getInt("id_categoria");
+                        if(!resultSet.wasNull())
+                        {
+                            categoria=new Categoria(idCategoria, resultSet.getString("cat_prodotto"));
+                        }
+
                         Prodotto prodotto=new Prodotto(id_prodotto, nome, prezzo, giacenza, categoria);
                         carrello.aggiungiProdotto(prodotto, resultSet.getInt("quantita"));
 

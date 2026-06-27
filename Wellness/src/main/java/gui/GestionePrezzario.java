@@ -1,6 +1,7 @@
 package gui;
 
 import controller.Controller;
+import model.commerce.Categoria;
 import model.commerce.Prodotto;
 
 import javax.swing.*;
@@ -38,12 +39,18 @@ public class GestionePrezzario {
         JPanel sud = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton btnAggiungi = new JButton("Aggiungi Prodotto");
         btnAggiungi.addActionListener(e -> aggiungiProdotto());
+        JButton btnCategorie = new JButton("Gestisci Categorie");
+        btnCategorie.addActionListener(e -> {
+            new GestioneCategorie(controller, frame);
+            frame.setVisible(false);
+        });
         JButton btnIndietro = new JButton("Indietro");
         btnIndietro.addActionListener(e -> {
             frameChiamante.setVisible(true);
             frame.dispose();
         });
         sud.add(btnAggiungi);
+        sud.add(btnCategorie);
         sud.add(btnIndietro);
         mainPanel.add(sud, BorderLayout.SOUTH);
 
@@ -61,7 +68,7 @@ public class GestionePrezzario {
             for (Prodotto p : prodotti) {
                 JPanel riga = new JPanel(new BorderLayout(10, 0));
                 riga.setBorder(BorderFactory.createEtchedBorder());
-                String categoria = p.getCategoria() == null ? "" : p.getCategoria();
+                String categoria = p.getCategoria() == null ? "Nessuna" : p.getCategoria().getNome();
                 String info = p.getNome()
                         + "   |   Prezzo: " + p.getPrezzo() + " EUR"
                         + "   |   Giacenza: " + p.getGiacenza()
@@ -84,29 +91,39 @@ public class GestionePrezzario {
     }
 
     private void aggiungiProdotto() {
+        ArrayList<Categoria> categorie = controller.getListaCategorie();
+        if (categorie.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Nessuna categoria disponibile. Creane una con 'Gestisci Categorie'.");
+            return;
+        }
         String nome = chiediTesto("Nome del prodotto", null);
         if (nome == null) return;
         BigDecimal prezzo = chiediPrezzo(null);
         if (prezzo == null) return;
         Integer giacenza = chiediGiacenza(null);
         if (giacenza == null) return;
-        String categoria = chiediTesto("Categoria", null);
+        Categoria categoria = chiediCategoria(categorie, null);
         if (categoria == null) return;
-        boolean esito = controller.aggiungiProdotto(nome, prezzo, giacenza, categoria);
+        boolean esito = controller.aggiungiProdotto(nome, prezzo, giacenza, categoria.getId());
         JOptionPane.showMessageDialog(frame, esito ? "Prodotto aggiunto." : "Aggiunta non riuscita.");
         if (esito) aggiornaLista();
     }
 
     private void modificaProdotto(Prodotto p) {
+        ArrayList<Categoria> categorie = controller.getListaCategorie();
+        if (categorie.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Nessuna categoria disponibile. Creane una con 'Gestisci Categorie'.");
+            return;
+        }
         String nome = chiediTesto("Nome del prodotto", p.getNome());
         if (nome == null) return;
         BigDecimal prezzo = chiediPrezzo(p.getPrezzo());
         if (prezzo == null) return;
         Integer giacenza = chiediGiacenza(p.getGiacenza());
         if (giacenza == null) return;
-        String categoria = chiediTesto("Categoria", p.getCategoria());
+        Categoria categoria = chiediCategoria(categorie, p.getCategoria());
         if (categoria == null) return;
-        boolean esito = controller.modificaProdotto(p.getId(), nome, prezzo, giacenza, categoria);
+        boolean esito = controller.modificaProdotto(p.getId(), nome, prezzo, giacenza, categoria.getId());
         JOptionPane.showMessageDialog(frame, esito ? "Prodotto modificato." : "Modifica non riuscita.");
         if (esito) aggiornaLista();
     }
@@ -118,6 +135,24 @@ public class GestionePrezzario {
         boolean esito = controller.rimuoviProdotto(p.getId());
         JOptionPane.showMessageDialog(frame, esito ? "Prodotto rimosso." : "Rimozione non riuscita.");
         if (esito) aggiornaLista();
+    }
+
+    private Categoria chiediCategoria(ArrayList<Categoria> categorie, Categoria predefinita) {
+        String[] etichette = new String[categorie.size()];
+        String selezioneIniziale = etichette.length > 0 ? etichette[0] : null;
+        for (int i = 0; i < categorie.size(); i++) {
+            etichette[i] = categorie.get(i).getNome();
+            if (predefinita != null && predefinita.getId() == categorie.get(i).getId()) {
+                selezioneIniziale = etichette[i];
+            }
+        }
+        Object scelta = JOptionPane.showInputDialog(frame, "Categoria", "Selezione categoria",
+                JOptionPane.QUESTION_MESSAGE, null, etichette, selezioneIniziale);
+        if (scelta == null) return null;
+        for (int i = 0; i < etichette.length; i++) {
+            if (etichette[i].equals(scelta)) return categorie.get(i);
+        }
+        return null;
     }
 
     private String chiediTesto(String etichetta, String predefinito) {

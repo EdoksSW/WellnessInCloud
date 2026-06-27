@@ -8,9 +8,9 @@ import java.util.ArrayList;
 public interface ProdottoDAO {
     ArrayList<Prodotto> getAllProdotti();
 
-    boolean aggiungiProdotto(String nome, BigDecimal prezzo, int giacenza, String categoria);
+    boolean aggiungiProdotto(String nome, BigDecimal prezzo, int giacenza, Integer idCategoria);
 
-    boolean modificaProdotto(int idProdotto, String nome, BigDecimal prezzo, int giacenza, String categoria);
+    boolean modificaProdotto(int idProdotto, String nome, BigDecimal prezzo, int giacenza, Integer idCategoria);
 
     boolean rimuoviProdotto(int idProdotto);
 }

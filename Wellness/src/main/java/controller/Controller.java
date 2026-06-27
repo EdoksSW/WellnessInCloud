@@ -4,11 +4,13 @@ import dao.StaffDAO;
 import dao.TurnoDAO;
 import dao.CorsoDAO;
 import dao.ProdottoDAO;
+import dao.CategoriaDAO;
 import implementazioniPostgresDAO.UtenteImplementazionePostgresDAO;
 import implementazioniPostgresDAO.StaffImplementazionePostgresDAO;
 import implementazioniPostgresDAO.TurnoImplementazionePostgresDAO;
 import implementazioniPostgresDAO.CorsoImplementazionePostgresDAO;
 import implementazioniPostgresDAO.ProdottoImplementazionePostgresDAO;
+import implementazioniPostgresDAO.CategoriaImplementazionePostgresDAO;
 import model.utenti.*;
 import model.enums.*;
 import model.commerce.*;
@@ -99,19 +101,39 @@ public class Controller
         return prodottoDAO.getAllProdotti();
     }
 
-    public boolean aggiungiProdotto(String nome, BigDecimal prezzo, int giacenza, String categoria) {
+    public boolean aggiungiProdotto(String nome, BigDecimal prezzo, int giacenza, Integer idCategoria) {
         ProdottoDAO prodottoDAO = new ProdottoImplementazionePostgresDAO();
-        return prodottoDAO.aggiungiProdotto(nome, prezzo, giacenza, categoria);
+        return prodottoDAO.aggiungiProdotto(nome, prezzo, giacenza, idCategoria);
     }
 
-    public boolean modificaProdotto(int idProdotto, String nome, BigDecimal prezzo, int giacenza, String categoria) {
+    public boolean modificaProdotto(int idProdotto, String nome, BigDecimal prezzo, int giacenza, Integer idCategoria) {
         ProdottoDAO prodottoDAO = new ProdottoImplementazionePostgresDAO();
-        return prodottoDAO.modificaProdotto(idProdotto, nome, prezzo, giacenza, categoria);
+        return prodottoDAO.modificaProdotto(idProdotto, nome, prezzo, giacenza, idCategoria);
     }
 
     public boolean rimuoviProdotto(int idProdotto) {
         ProdottoDAO prodottoDAO = new ProdottoImplementazionePostgresDAO();
         return prodottoDAO.rimuoviProdotto(idProdotto);
+    }
+
+    public ArrayList<Categoria> getListaCategorie() {
+        CategoriaDAO categoriaDAO = new CategoriaImplementazionePostgresDAO();
+        return categoriaDAO.getAllCategorie();
+    }
+
+    public boolean aggiungiCategoria(String nome) {
+        CategoriaDAO categoriaDAO = new CategoriaImplementazionePostgresDAO();
+        return categoriaDAO.aggiungiCategoria(nome);
+    }
+
+    public boolean modificaCategoria(int idCategoria, String nome) {
+        CategoriaDAO categoriaDAO = new CategoriaImplementazionePostgresDAO();
+        return categoriaDAO.modificaCategoria(idCategoria, nome);
+    }
+
+    public boolean rimuoviCategoria(int idCategoria) {
+        CategoriaDAO categoriaDAO = new CategoriaImplementazionePostgresDAO();
+        return categoriaDAO.rimuoviCategoria(idCategoria);
     }
 
     public String messaggioAccessoNegato(Utente u) {

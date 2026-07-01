@@ -37,7 +37,7 @@ public class HomeClient {
         lblCodiceFiscale.setText("Codice Fiscale: " + clienteLoggato.getCodiceFiscale());
         lblEmail.setText("Email: " + clienteLoggato.getEmail());
         lblTelefono.setText("Telefono: " + clienteLoggato.getTelefono());
-        lblIndirizzo.setText("Indirizzo: " + clienteLoggato.getIndirizzo() + " n." + clienteLoggato.getNumeroCivico() + " (CAP: " + clienteLoggato.getCap() + ")");
+        lblIndirizzo.setText("Indirizzo: " + clienteLoggato.getVia() + " n." + clienteLoggato.getCivico() + " (CAP: " + clienteLoggato.getCap() + ")");
         lblStato.setText("Stato Account: " + clienteLoggato.getStatoAcc());
         lblStato.setForeground(clienteLoggato.getStatoAcc() == StatoAccount.ATTIVO ? new Color(34, 139, 34) : Color.RED);
 

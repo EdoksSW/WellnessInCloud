@@ -27,17 +27,18 @@ public class CorsoImplementazionePostgresDAO implements CorsoDAO {
     @Override
     public ArrayList<Corso> getAllCorsi() {
         ArrayList<Corso> daRestituire = new ArrayList<>();
-        String query = "SELECT c.id_corso, c.nome, c.descrizione, c.cf_staff, s.nome AS staff_nome, s.cognome AS staff_cognome, s.ruolo AS staff_ruolo " +
-                "FROM corso c JOIN staff s ON c.cf_staff = s.codicefiscale ORDER BY c.nome;";
+        String query = "SELECT c.id_corso, c.nome, c.descrizione, c.cf_staff, u.nome AS staff_nome, u.cognome AS staff_cognome, s.ruolo AS staff_ruolo " +
+                "FROM corso c JOIN staff s ON c.cf_staff = s.codice_fiscale JOIN utente u ON s.codice_fiscale = u.codice_fiscale ORDER BY c.nome;";
         try (PreparedStatement ps = this.connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
+                String staffRuolo = rs.getString("staff_ruolo");
                 Staff istruttore = new Staff(
                         rs.getString("cf_staff"),
                         rs.getString("staff_nome"),
                         rs.getString("staff_cognome"),
-                        null, null, null, null, 0, null, null,
-                        RuoloStaff.valueOf(rs.getString("staff_ruolo"))
+                        null, null, null, null, 0, null, 0, null, null, null, null,
+                        staffRuolo != null ? RuoloStaff.valueOf(staffRuolo) : null
                 );
                 daRestituire.add(new Corso(
                         rs.getInt("id_corso"),

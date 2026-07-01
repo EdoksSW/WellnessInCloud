@@ -4,49 +4,39 @@ import controller.Controller;
 import model.commerce.Categoria;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 
 public class GestioneCategorie {
 
+    private JPanel mainPanel;
+    private JLabel lblTitolo;
+    private JScrollPane scrollPane;
+    private JPanel listaPanel;
+    private JPanel panelBottoni;
+    private JButton btnAggiungi;
+    private JButton btnIndietro;
+
     public JFrame frame;
     private JFrame frameChiamante;
     private Controller controller;
-    private JPanel listaPanel;
 
     public GestioneCategorie(Controller controller, JFrame frameChiamante) {
         this.controller = controller;
         this.frameChiamante = frameChiamante;
 
-        frame = new JFrame("Wellness In Cloud - Gestione Categorie");
-        frame.setSize(500, 380);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        JLabel titolo = new JLabel("Elenco Categorie", SwingConstants.CENTER);
-        titolo.setFont(new Font("Arial", Font.BOLD, 18));
-        mainPanel.add(titolo, BorderLayout.NORTH);
-
-        listaPanel = new JPanel();
         listaPanel.setLayout(new BoxLayout(listaPanel, BoxLayout.Y_AXIS));
-        mainPanel.add(new JScrollPane(listaPanel), BorderLayout.CENTER);
 
-        JPanel sud = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton btnAggiungi = new JButton("Aggiungi Categoria");
         btnAggiungi.addActionListener(e -> aggiungiCategoria());
-        JButton btnIndietro = new JButton("Indietro");
         btnIndietro.addActionListener(e -> {
             frameChiamante.setVisible(true);
             frame.dispose();
         });
-        sud.add(btnAggiungi);
-        sud.add(btnIndietro);
-        mainPanel.add(sud, BorderLayout.SOUTH);
 
+        frame = new JFrame("Wellness In Cloud - Gestione Categorie");
         frame.setContentPane(mainPanel);
+        frame.setSize(500, 380);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         aggiornaLista();
         frame.setVisible(true);
     }
@@ -58,18 +48,18 @@ public class GestioneCategorie {
             listaPanel.add(new JLabel("Nessuna categoria presente."));
         } else {
             for (Categoria c : categorie) {
-                JPanel riga = new JPanel(new BorderLayout(10, 0));
+                JPanel riga = new JPanel(new java.awt.BorderLayout(10, 0));
                 riga.setBorder(BorderFactory.createEtchedBorder());
-                riga.add(new JLabel(c.getNome()), BorderLayout.CENTER);
+                riga.add(new JLabel(c.getNome()), java.awt.BorderLayout.CENTER);
 
-                JPanel azioni = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                JPanel azioni = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
                 JButton btnModifica = new JButton("Modifica");
                 btnModifica.addActionListener(e -> modificaCategoria(c));
                 JButton btnRimuovi = new JButton("Rimuovi");
                 btnRimuovi.addActionListener(e -> rimuoviCategoria(c));
                 azioni.add(btnModifica);
                 azioni.add(btnRimuovi);
-                riga.add(azioni, BorderLayout.EAST);
+                riga.add(azioni, java.awt.BorderLayout.EAST);
                 listaPanel.add(riga);
             }
         }

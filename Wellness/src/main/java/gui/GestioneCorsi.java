@@ -5,49 +5,39 @@ import model.logistica.Corso;
 import model.utenti.Staff;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 
 public class GestioneCorsi {
 
+    private JPanel mainPanel;
+    private JLabel lblTitolo;
+    private JScrollPane scrollPane;
+    private JPanel listaPanel;
+    private JPanel panelBottoni;
+    private JButton btnAggiungi;
+    private JButton btnIndietro;
+
     public JFrame frame;
     private JFrame frameChiamante;
     private Controller controller;
-    private JPanel listaPanel;
 
     public GestioneCorsi(Controller controller, JFrame frameChiamante) {
         this.controller = controller;
         this.frameChiamante = frameChiamante;
 
-        frame = new JFrame("Wellness In Cloud - Gestione Corsi");
-        frame.setSize(700, 420);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        JLabel titolo = new JLabel("Elenco Corsi", SwingConstants.CENTER);
-        titolo.setFont(new Font("Arial", Font.BOLD, 18));
-        mainPanel.add(titolo, BorderLayout.NORTH);
-
-        listaPanel = new JPanel();
         listaPanel.setLayout(new BoxLayout(listaPanel, BoxLayout.Y_AXIS));
-        mainPanel.add(new JScrollPane(listaPanel), BorderLayout.CENTER);
 
-        JPanel sud = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton btnAggiungi = new JButton("Aggiungi Corso");
         btnAggiungi.addActionListener(e -> aggiungiCorso());
-        JButton btnIndietro = new JButton("Indietro");
         btnIndietro.addActionListener(e -> {
             frameChiamante.setVisible(true);
             frame.dispose();
         });
-        sud.add(btnAggiungi);
-        sud.add(btnIndietro);
-        mainPanel.add(sud, BorderLayout.SOUTH);
 
+        frame = new JFrame("Wellness In Cloud - Gestione Corsi");
         frame.setContentPane(mainPanel);
+        frame.setSize(700, 420);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         aggiornaLista();
         frame.setVisible(true);
     }
@@ -59,22 +49,22 @@ public class GestioneCorsi {
             listaPanel.add(new JLabel("Nessun corso presente."));
         } else {
             for (Corso c : corsi) {
-                JPanel riga = new JPanel(new BorderLayout(10, 0));
+                JPanel riga = new JPanel(new java.awt.BorderLayout(10, 0));
                 riga.setBorder(BorderFactory.createEtchedBorder());
                 String descr = c.getDescrizione() == null ? "" : c.getDescrizione();
                 String info = c.getNome()
                         + "   |   " + descr
                         + "   |   Istruttore: " + c.getIstruttore().getNome() + " " + c.getIstruttore().getCognome();
-                riga.add(new JLabel(info), BorderLayout.CENTER);
+                riga.add(new JLabel(info), java.awt.BorderLayout.CENTER);
 
-                JPanel azioni = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                JPanel azioni = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
                 JButton btnModifica = new JButton("Modifica");
                 btnModifica.addActionListener(e -> modificaCorso(c));
                 JButton btnRimuovi = new JButton("Rimuovi");
                 btnRimuovi.addActionListener(e -> rimuoviCorso(c));
                 azioni.add(btnModifica);
                 azioni.add(btnRimuovi);
-                riga.add(azioni, BorderLayout.EAST);
+                riga.add(azioni, java.awt.BorderLayout.EAST);
                 listaPanel.add(riga);
             }
         }

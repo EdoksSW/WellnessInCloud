@@ -28,7 +28,7 @@ public class ProdottoImplementazionePostgresDAO implements ProdottoDAO {
     @Override
     public ArrayList<Prodotto> getAllProdotti() {
         ArrayList<Prodotto> daRestituire = new ArrayList<>();
-        String query = "SELECT p.id_prodotto, p.nome, p.prezzo, p.giacenza, p.id_categoria, c.cat_prodotto AS categoria_nome " +
+        String query = "SELECT p.id_prodotto, p.nome, p.prezzo, p.giacenza, p.id_categoria, c.nome AS categoria_nome " +
                 "FROM prodotto p LEFT JOIN categoria c ON p.id_categoria = c.id_categoria ORDER BY p.nome;";
         try (PreparedStatement ps = this.connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {

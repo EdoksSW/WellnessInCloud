@@ -1,7 +1,9 @@
 package dao;
 
+import model.utenti.Cliente;
 import model.utenti.Staff;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public interface StaffDAO {
@@ -9,12 +11,15 @@ public interface StaffDAO {
 
     ArrayList<Staff> getIstruttori();
 
-    ArrayList<model.utenti.Cliente> getAllClientiDaStaff();
-    boolean aggiungiClienteDaStaff(model.utenti.Cliente cliente);
-    boolean modificaClienteDaStaff(model.utenti.Cliente cliente);
+    ArrayList<Cliente> getAllClientiDaStaff();
+
+    boolean aggiungiClienteDaStaff(Cliente cliente);
+
+    boolean modificaClienteDaStaff(Cliente cliente);
+
     boolean rimuoviClienteDaStaff(String codiceFiscale);
 
-    java.time.LocalDate getCertificatoDaStaff(String codiceFiscale);
-    boolean aggiornaCertificatoDaStaff(String codiceFiscale, java.time.LocalDate nuovaScadenza);
+    LocalDate getCertificatoDaStaff(String codiceFiscale);
 
+    boolean aggiornaCertificatoDaStaff(String codiceFiscale, LocalDate nuovaScadenza);
 }

@@ -7,9 +7,8 @@ public class Pagamento {
     private String metodo;
     private int id_pagamento;
 
-    
-    public Pagamento(){}
-    
+    public Pagamento() { }
+
     public Pagamento(BigDecimal importo, String metodo, int id_pagamento) {
         this.importo = importo;
         this.metodo = metodo;
@@ -38,8 +37,5 @@ public class Pagamento {
 
     public void setId_pagamento(int id_pagamento) {
         this.id_pagamento = id_pagamento;
-    }
-
-    public void set() {
     }
 }

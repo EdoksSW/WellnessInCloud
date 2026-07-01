@@ -33,6 +33,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
             while (rs.next()) {
                 LocalDate dataNascita = rs.getDate("datanascita") != null ? rs.getDate("datanascita").toLocalDate() : null;
                 int eta = rs.getInt("eta");
+
                 Staff s = new Staff(
                         rs.getString("codicefiscale"),
                         rs.getString("nome"),
@@ -42,6 +43,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                         rs.getString("password"),
                         dataNascita,
                         eta,
+                        "", 0, "", "", // <--- AGGIUNTI I CAMPI MANCANTI (via, civico, cap, cartaFedelta)
                         rs.getString("qualifica"),
                         rs.getString("iban"),
                         RuoloStaff.valueOf(rs.getString("ruolo"))
@@ -64,6 +66,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
             while (rs.next()) {
                 LocalDate dataNascita = rs.getDate("datanascita") != null ? rs.getDate("datanascita").toLocalDate() : null;
                 int eta = rs.getInt("eta");
+
                 Staff s = new Staff(
                         rs.getString("codicefiscale"),
                         rs.getString("nome"),
@@ -73,6 +76,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                         rs.getString("password"),
                         dataNascita,
                         eta,
+                        "", 0, "", "", // <--- CORREZIONE: AGGIUNTI ANCHE QUI I CAMPI MANCANTI
                         rs.getString("qualifica"),
                         rs.getString("iban"),
                         RuoloStaff.valueOf(rs.getString("ruolo"))
@@ -102,7 +106,8 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                         rs.getString("cognome"),
                         rs.getString("email"),
                         rs.getString("telefono"),
-                        "", null, 0, "", 0, "", statoAccount
+                        "", null, 0, "", 0, "", "", // <--- CORREZIONE: AGGIUNTO IL CAMPO VUOTO PER LA CARTA FEDELTA'
+                        statoAccount
                 );
                 daRestituire.add(c);
             }
@@ -115,7 +120,8 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
 
     @Override
     public boolean aggiungiClienteDaStaff(model.utenti.Cliente cliente) {
-        String query = "INSERT INTO cliente (codicefiscale, nome, cognome, email, telefono, password, eta, stato_account) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+        // CORREZIONE: Ripristinata la data di nascita obbligatoria per non far crashare Postgres
+        String query = "INSERT INTO cliente (codicefiscale, nome, cognome, email, telefono, password, datanascita, eta, stato_account) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
         try (PreparedStatement ps = this.connection.prepareStatement(query)) {
             ps.setString(1, cliente.getCodiceFiscale());
             ps.setString(2, cliente.getNome());
@@ -123,8 +129,16 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
             ps.setString(4, cliente.getEmail());
             ps.setString(5, cliente.getTelefono());
             ps.setString(6, cliente.getPassword() != null ? cliente.getPassword() : "1234");
-            ps.setInt(7, cliente.getEta());
-            ps.setString(8, cliente.getStatoAcc().name());
+
+            // Sicurezza: se la grafica passa null, inserisce la data di oggi per evitare il blocco NOT NULL
+            if (cliente.getDataNascita() != null) {
+                ps.setDate(7, java.sql.Date.valueOf(cliente.getDataNascita()));
+            } else {
+                ps.setDate(7, java.sql.Date.valueOf(LocalDate.now()));
+            }
+
+            ps.setInt(8, cliente.getEta());
+            ps.setString(9, cliente.getStatoAcc().name());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -134,13 +148,21 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
 
     @Override
     public boolean modificaClienteDaStaff(model.utenti.Cliente cliente) {
-        String query = "UPDATE cliente SET nome = ?, cognome = ?, email = ?, telefono = ? WHERE codicefiscale = ?;";
+        // CORREZIONE: Ripristinata la modifica della data di nascita
+        String query = "UPDATE cliente SET nome = ?, cognome = ?, email = ?, telefono = ?, datanascita = ? WHERE codicefiscale = ?;";
         try (PreparedStatement ps = this.connection.prepareStatement(query)) {
             ps.setString(1, cliente.getNome());
             ps.setString(2, cliente.getCognome());
             ps.setString(3, cliente.getEmail());
             ps.setString(4, cliente.getTelefono());
-            ps.setString(5, cliente.getCodiceFiscale());
+
+            if (cliente.getDataNascita() != null) {
+                ps.setDate(5, java.sql.Date.valueOf(cliente.getDataNascita()));
+            } else {
+                ps.setDate(5, java.sql.Date.valueOf(LocalDate.now()));
+            }
+
+            ps.setString(6, cliente.getCodiceFiscale());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -162,12 +184,13 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
 
     @Override
     public LocalDate getCertificatoDaStaff(String codiceFiscale) {
-        String query = "SELECT scadenza_certificato FROM cliente WHERE codicefiscale = ?;";
+        // CORREZIONE: Miriamo alla tabella "certificato" usando la chiave esterna
+        String query = "SELECT data_scadenza FROM certificato WHERE cf_cliente = ?;";
         try (PreparedStatement ps = this.connection.prepareStatement(query)) {
             ps.setString(1, codiceFiscale);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    java.sql.Date dataSQL = rs.getDate("scadenza_certificato");
+                    java.sql.Date dataSQL = rs.getDate("data_scadenza");
                     if (dataSQL != null) return dataSQL.toLocalDate();
                 }
             }
@@ -179,12 +202,27 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
 
     @Override
     public boolean aggiornaCertificatoDaStaff(String codiceFiscale, LocalDate nuovaScadenza) {
-        String query = "UPDATE cliente SET scadenza_certificato = ? WHERE codicefiscale = ?;";
-        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
-            ps.setDate(1, java.sql.Date.valueOf(nuovaScadenza));
-            ps.setString(2, codiceFiscale);
-            return ps.executeUpdate() > 0;
+        // CORREZIONE: Logica UPSERT (Update + Insert) sulla tabella "certificato"
+        String updateQuery = "UPDATE certificato SET data_scadenza = ? WHERE cf_cliente = ?;";
+        try (PreparedStatement psUpdate = this.connection.prepareStatement(updateQuery)) {
+            psUpdate.setDate(1, java.sql.Date.valueOf(nuovaScadenza));
+            psUpdate.setString(2, codiceFiscale);
+
+            int righeModificate = psUpdate.executeUpdate();
+
+            if (righeModificate > 0) {
+                return true;
+            } else {
+                String insertQuery = "INSERT INTO certificato (data_emissione, data_scadenza, cf_cliente) VALUES (?, ?, ?);";
+                try (PreparedStatement psInsert = this.connection.prepareStatement(insertQuery)) {
+                    psInsert.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
+                    psInsert.setDate(2, java.sql.Date.valueOf(nuovaScadenza));
+                    psInsert.setString(3, codiceFiscale);
+                    return psInsert.executeUpdate() > 0;
+                }
+            }
         } catch (SQLException e) {
+            System.err.println("Errore in aggiornaCertificatoDaStaff: " + e.getMessage());
             e.printStackTrace();
             return false;
         }

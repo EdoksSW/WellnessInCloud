@@ -70,7 +70,7 @@ public class GestioneClientiStaff {
             String email = JOptionPane.showInputDialog(mainPanel, "Email:");
             String telefono = JOptionPane.showInputDialog(mainPanel, "Telefono:");
 
-            Cliente nuovo = new Cliente(cf, nome, cognome, email, telefono, "1234", null, 0, "", 0, "", StatoAccount.ATTIVO);
+            Cliente nuovo = new Cliente(cf, nome, cognome, email, telefono, "1234", null, 0, "", 0, "", "", StatoAccount.ATTIVO);
             if (controller.aggiungiClienteTramiteStaff(nuovo)) {
                 JOptionPane.showMessageDialog(mainPanel, "Cliente registrato con successo.");
                 aggiornaTabella();
@@ -96,7 +96,7 @@ public class GestioneClientiStaff {
             String nuovaEmail = JOptionPane.showInputDialog(mainPanel, "Modifica Email:", modelloTabella.getValueAt(riga, 3));
             String nuovoTel = JOptionPane.showInputDialog(mainPanel, "Modifica Telefono:", modelloTabella.getValueAt(riga, 4));
 
-            Cliente modificato = new Cliente(cf, nuovoNome, nuovoCognome, nuovaEmail, nuovoTel, "", null, 0, "", 0, "", StatoAccount.ATTIVO);
+            Cliente modificato = new Cliente(cf, nuovoNome, nuovoCognome, nuovaEmail, nuovoTel, "", null, 0, "", 0, "", "", StatoAccount.ATTIVO);
             if (controller.modificaClienteTramiteStaff(modificato)) {
                 JOptionPane.showMessageDialog(mainPanel, "Dati aggiornati.");
                 aggiornaTabella();

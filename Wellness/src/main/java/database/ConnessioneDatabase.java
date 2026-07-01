@@ -11,7 +11,7 @@ public class ConnessioneDatabase {
     public Connection connection = null;
 
     private String nome = "postgres";
-    private String password = "password";
+    private String password = "kazekage02";
     private String url = "jdbc:postgresql://localhost:5432/Wellness";
     private String driver = "org.postgresql.Driver";
 

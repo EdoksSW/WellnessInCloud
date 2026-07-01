@@ -321,6 +321,42 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
         List<Ordine> storicoOrdini=new ArrayList<>();
 
         String query="SELECT" +
-                "o.id_ordine, o.data AS data_ordine, "
+                "o.id_ordine, " +
+                "o.data_ordine, " +
+                "o.stato " +
+                "o.totale " +
+                "od.quantita " +
+                "p.id_prodotto " +
+                "p.nome AS nome_prodotto " +
+                "p.prezzo " +
+                "FROM ordine o " +
+                "JOIN ordine_dettaglio od ON ordine.id_ordine = ordine_dettaglio.id_ordine " +
+                "JOIN prodotto p ON ordine_dettaglio-id_prodotto = prodotto.id_prodotto " +
+                "WHERE o.cf_cliente = ? " +
+                "ORDER BY o.data_ordine DESC, o.id_ordine DESC;";
+
+        try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
+        {
+            preparedStatement.setString(1, cliente.getCodiceFiscale());
+
+            try(ResultSet resultSet= preparedStatement.executeQuery())
+            {
+                model.commerce.Ordine ordine=null;
+
+                while(resultSet.next())
+                {
+                    int id_ordine=resultSet.getInt("id_ordine");
+
+                    if(ordine==null || ordine.getId_ordine() != id_ordine)
+                    {
+                        LocalDate dataOrdine=resultSet.getDate("data_ordine").toLocalDate();
+                        String stato_ordine=resultSet.getString("stato");
+                        BigDecimal totale=resultSet.getBigDecimal("totale");
+
+                        ordine=new Ordine(id_ordine, dataOrdine, totale,stato_ordine, )
+                    }
+                }
+            }
+        }
     }
 }

@@ -27,7 +27,13 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
     @Override
     public ArrayList<Staff> getAllStaff() {
         ArrayList<Staff> daRestituire = new ArrayList<>();
-        String query = "SELECT codicefiscale, nome, cognome, email, password, telefono, datanascita, eta, qualifica, iban, ruolo FROM staff ORDER BY cognome, nome;";
+
+        // MODIFICA: Aggiunto INNER JOIN con la tabella utente per recuperare i dati anagrafici
+        String query = "SELECT u.codice_fiscale, u.nome, u.cognome, u.email, u.telefono, u.password, u.datanascita, u.eta, s.qualifica, s.iban, s.ruolo " +
+                "FROM utente u " +
+                "INNER JOIN staff s ON u.codice_fiscale = s.codice_fiscale " +
+                "ORDER BY u.cognome, u.nome;";
+
         try (PreparedStatement ps = this.connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -35,7 +41,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                 int eta = rs.getInt("eta");
 
                 Staff s = new Staff(
-                        rs.getString("codicefiscale"),
+                        rs.getString("codice_fiscale"),
                         rs.getString("nome"),
                         rs.getString("cognome"),
                         rs.getString("email"),
@@ -43,7 +49,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                         rs.getString("password"),
                         dataNascita,
                         eta,
-                        "", 0, "", "", // <--- AGGIUNTI I CAMPI MANCANTI (via, civico, cap, cartaFedelta)
+                        "", 0, "", "", // Tappi
                         rs.getString("qualifica"),
                         rs.getString("iban"),
                         RuoloStaff.valueOf(rs.getString("ruolo"))
@@ -60,7 +66,14 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
     @Override
     public ArrayList<Staff> getIstruttori() {
         ArrayList<Staff> daRestituire = new ArrayList<>();
-        String query = "SELECT codicefiscale, nome, cognome, email, password, telefono, datanascita, eta, qualifica, iban, ruolo FROM staff WHERE ruolo = 'ISTRUTTORE' ORDER BY cognome, nome;";
+
+        // MODIFICA: Aggiunto INNER JOIN anche qui
+        String query = "SELECT u.codice_fiscale, u.nome, u.cognome, u.email, u.telefono, u.password, u.datanascita, u.eta, s.qualifica, s.iban, s.ruolo " +
+                "FROM utente u " +
+                "INNER JOIN staff s ON u.codice_fiscale = s.codice_fiscale " +
+                "WHERE s.ruolo = 'ISTRUTTORE' " +
+                "ORDER BY u.cognome, u.nome;";
+
         try (PreparedStatement ps = this.connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -68,7 +81,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                 int eta = rs.getInt("eta");
 
                 Staff s = new Staff(
-                        rs.getString("codicefiscale"),
+                        rs.getString("codice_fiscale"),
                         rs.getString("nome"),
                         rs.getString("cognome"),
                         rs.getString("email"),
@@ -76,7 +89,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                         rs.getString("password"),
                         dataNascita,
                         eta,
-                        "", 0, "", "", // <--- CORREZIONE: AGGIUNTI ANCHE QUI I CAMPI MANCANTI
+                        "", 0, "", "", // Tappi
                         rs.getString("qualifica"),
                         rs.getString("iban"),
                         RuoloStaff.valueOf(rs.getString("ruolo"))
@@ -93,7 +106,12 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
     @Override
     public ArrayList<model.utenti.Cliente> getAllClientiDaStaff() {
         ArrayList<model.utenti.Cliente> daRestituire = new ArrayList<>();
-        String query = "SELECT codicefiscale, nome, cognome, email, telefono, stato_account FROM cliente ORDER BY cognome, nome;";
+
+        String query = "SELECT u.codice_fiscale, u.nome, u.cognome, u.email, u.telefono, c.stato_account " +
+                "FROM utente u " +
+                "INNER JOIN cliente c ON u.codice_fiscale = c.codice_fiscale " +
+                "ORDER BY u.cognome, u.nome;";
+
         try (PreparedStatement ps = this.connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -101,12 +119,12 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                 model.enums.StatoAccount statoAccount = model.enums.StatoAccount.valueOf(stato_acc.trim().toUpperCase());
 
                 model.utenti.Cliente c = new model.utenti.Cliente(
-                        rs.getString("codicefiscale"),
+                        rs.getString("codice_fiscale"),
                         rs.getString("nome"),
                         rs.getString("cognome"),
                         rs.getString("email"),
                         rs.getString("telefono"),
-                        "", null, 0, "", 0, "", "", // <--- CORREZIONE: AGGIUNTO IL CAMPO VUOTO PER LA CARTA FEDELTA'
+                        "", null, 0, "", 0, "", "", // Tappi per i parametri vuoti
                         statoAccount
                 );
                 daRestituire.add(c);
@@ -120,36 +138,61 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
 
     @Override
     public boolean aggiungiClienteDaStaff(model.utenti.Cliente cliente) {
-        // CORREZIONE: Ripristinata la data di nascita obbligatoria per non far crashare Postgres
-        String query = "INSERT INTO cliente (codicefiscale, nome, cognome, email, telefono, password, datanascita, eta, stato_account) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
-        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
-            ps.setString(1, cliente.getCodiceFiscale());
-            ps.setString(2, cliente.getNome());
-            ps.setString(3, cliente.getCognome());
-            ps.setString(4, cliente.getEmail());
-            ps.setString(5, cliente.getTelefono());
-            ps.setString(6, cliente.getPassword() != null ? cliente.getPassword() : "1234");
+        // MODIFICA: Logica a due tabelle con transazione per evitare salvataggi a metà
+        String insertUtente = "INSERT INTO utente (codice_fiscale, nome, cognome, email, telefono, password, datanascita, eta, via, civico, cap, carta_fedelta) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        String insertCliente = "INSERT INTO cliente (codice_fiscale, stato_account) VALUES (?, ?);";
 
-            // Sicurezza: se la grafica passa null, inserisce la data di oggi per evitare il blocco NOT NULL
-            if (cliente.getDataNascita() != null) {
-                ps.setDate(7, java.sql.Date.valueOf(cliente.getDataNascita()));
-            } else {
-                ps.setDate(7, java.sql.Date.valueOf(LocalDate.now()));
+        try {
+            this.connection.setAutoCommit(false);
+
+            try (PreparedStatement psUtente = this.connection.prepareStatement(insertUtente)) {
+                psUtente.setString(1, cliente.getCodiceFiscale());
+                psUtente.setString(2, cliente.getNome());
+                psUtente.setString(3, cliente.getCognome());
+                psUtente.setString(4, cliente.getEmail());
+                psUtente.setString(5, cliente.getTelefono());
+                psUtente.setString(6, cliente.getPassword() != null ? cliente.getPassword() : "1234");
+
+                if (cliente.getDataNascita() != null) {
+                    psUtente.setDate(7, java.sql.Date.valueOf(cliente.getDataNascita()));
+                } else {
+                    psUtente.setDate(7, java.sql.Date.valueOf(LocalDate.now()));
+                }
+
+                psUtente.setInt(8, cliente.getEta());
+                psUtente.setString(9, "");
+                psUtente.setInt(10, 0);
+                psUtente.setString(11, "");
+                psUtente.setString(12, "");
+                psUtente.executeUpdate();
             }
 
-            ps.setInt(8, cliente.getEta());
-            ps.setString(9, cliente.getStatoAcc().name());
-            return ps.executeUpdate() > 0;
+            try (PreparedStatement psCliente = this.connection.prepareStatement(insertCliente)) {
+                psCliente.setString(1, cliente.getCodiceFiscale());
+                psCliente.setString(2, cliente.getStatoAcc().name());
+                psCliente.executeUpdate();
+            }
+
+            this.connection.commit();
+            this.connection.setAutoCommit(true);
+            return true;
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            try {
+                this.connection.rollback();
+                this.connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            System.err.println("Errore SQL in aggiungiCliente: " + e.getMessage());
             return false;
         }
     }
 
     @Override
     public boolean modificaClienteDaStaff(model.utenti.Cliente cliente) {
-        // CORREZIONE: Ripristinata la modifica della data di nascita
-        String query = "UPDATE cliente SET nome = ?, cognome = ?, email = ?, telefono = ?, datanascita = ? WHERE codicefiscale = ?;";
+        // MODIFICA: Aggiorniamo la tabella utente, non più cliente
+        String query = "UPDATE utente SET nome = ?, cognome = ?, email = ?, telefono = ?, datanascita = ? WHERE codice_fiscale = ?;";
         try (PreparedStatement ps = this.connection.prepareStatement(query)) {
             ps.setString(1, cliente.getNome());
             ps.setString(2, cliente.getCognome());
@@ -165,6 +208,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
             ps.setString(6, cliente.getCodiceFiscale());
             return ps.executeUpdate() > 0;
         } catch (SQLException e) {
+            System.err.println("Errore in modificaClienteDaStaff: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -172,19 +216,41 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
 
     @Override
     public boolean rimuoviClienteDaStaff(String codiceFiscale) {
-        String query = "DELETE FROM cliente WHERE codicefiscale = ?;";
-        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
-            ps.setString(1, codiceFiscale);
-            return ps.executeUpdate() > 0;
+        // MODIFICA: Transazione per rimuovere prima il figlio (cliente) e poi il padre (utente)
+        String queryCliente = "DELETE FROM cliente WHERE codice_fiscale = ?;";
+        String queryUtente = "DELETE FROM utente WHERE codice_fiscale = ?;";
+
+        try {
+            this.connection.setAutoCommit(false);
+
+            try (PreparedStatement ps1 = this.connection.prepareStatement(queryCliente)) {
+                ps1.setString(1, codiceFiscale);
+                ps1.executeUpdate();
+            }
+
+            try (PreparedStatement ps2 = this.connection.prepareStatement(queryUtente)) {
+                ps2.setString(1, codiceFiscale);
+                ps2.executeUpdate();
+            }
+
+            this.connection.commit();
+            this.connection.setAutoCommit(true);
+            return true;
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            try {
+                this.connection.rollback();
+                this.connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            System.err.println("Errore in rimuoviClienteDaStaff: " + e.getMessage());
             return false;
         }
     }
 
     @Override
     public LocalDate getCertificatoDaStaff(String codiceFiscale) {
-        // CORREZIONE: Miriamo alla tabella "certificato" usando la chiave esterna
         String query = "SELECT data_scadenza FROM certificato WHERE cf_cliente = ?;";
         try (PreparedStatement ps = this.connection.prepareStatement(query)) {
             ps.setString(1, codiceFiscale);
@@ -202,7 +268,6 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
 
     @Override
     public boolean aggiornaCertificatoDaStaff(String codiceFiscale, LocalDate nuovaScadenza) {
-        // CORREZIONE: Logica UPSERT (Update + Insert) sulla tabella "certificato"
         String updateQuery = "UPDATE certificato SET data_scadenza = ? WHERE cf_cliente = ?;";
         try (PreparedStatement psUpdate = this.connection.prepareStatement(updateQuery)) {
             psUpdate.setDate(1, java.sql.Date.valueOf(nuovaScadenza));

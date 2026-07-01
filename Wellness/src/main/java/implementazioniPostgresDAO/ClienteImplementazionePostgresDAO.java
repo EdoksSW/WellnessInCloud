@@ -26,7 +26,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
 {
     private Connection connection;
 
-    ClienteImplementazionePostgresDAO()
+    public ClienteImplementazionePostgresDAO()
     {
         try
         {

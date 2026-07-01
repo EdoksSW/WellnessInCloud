@@ -5,12 +5,8 @@ import dao.TurnoDAO;
 import dao.CorsoDAO;
 import dao.ProdottoDAO;
 import dao.CategoriaDAO;
-import implementazioniPostgresDAO.UtenteImplementazionePostgresDAO;
-import implementazioniPostgresDAO.StaffImplementazionePostgresDAO;
-import implementazioniPostgresDAO.TurnoImplementazionePostgresDAO;
-import implementazioniPostgresDAO.CorsoImplementazionePostgresDAO;
-import implementazioniPostgresDAO.ProdottoImplementazionePostgresDAO;
-import implementazioniPostgresDAO.CategoriaImplementazionePostgresDAO;
+import dao.ClienteDAO;
+import implementazioniPostgresDAO.*;
 import model.utenti.*;
 import model.enums.*;
 import model.commerce.*;
@@ -176,3 +172,15 @@ public class Controller
     public List<Utente> getUtenti() {
         return utenti;
     }}
+
+//Controller Cliente--->
+
+public boolean effettuaIscrizioneCliente(Cliente cliente, TitoloIngresso titoloIngresso, int mesiDurata)
+{
+    LocalDate dataInizio=LocalDate.now();
+    LocalDate dataFine=dataInizio.plusMonths(mesiDurata);
+    Iscrizione iscrizione=new Iscrizione(0, dataInizio, dataFine, cliente, titoloIngresso);
+
+    ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+    return clienteDAO.effettuaIscrizione(iscrizione);
+}

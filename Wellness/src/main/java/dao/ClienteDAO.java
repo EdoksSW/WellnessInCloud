@@ -31,4 +31,6 @@ public interface ClienteDAO
 
     //Elenca di tutte le prenotazioni del Cliente
     List<Prenotazione> ottieniPrenotazioniCliente(Cliente cliente);
+
+    List<model.commerce.Ordine> ottieniStoricoOrdini(Cliente cliente);
 }

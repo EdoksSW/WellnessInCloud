@@ -2,15 +2,13 @@ package implementazioniPostgresDAO;
 
 import dao.ClienteDAO;
 import database.ConnessioneDatabase;
-import model.commerce.Carrello;
-import model.commerce.Categoria;
-import model.commerce.Iscrizione;
-import model.commerce.Prodotto;
+import model.commerce.*;
 import model.enums.StatoAccount;
 import model.enums.StatoPrenotazione;
 import model.logistica.Lezione;
 import model.logistica.Prenotazione;
 import model.utenti.Cliente;
+import model.commerce.Ordine;
 
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -316,5 +314,13 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
             e.printStackTrace();
         }
         return  listaPrenotazioni;
+    }
+
+    @Override
+    public List<Ordine> ottieniStoricoOrdini(Cliente cliente) {
+        List<Ordine> storicoOrdini=new ArrayList<>();
+
+        String query="SELECT" +
+                "o.id_ordine, o.data AS data_ordine, "
     }
 }

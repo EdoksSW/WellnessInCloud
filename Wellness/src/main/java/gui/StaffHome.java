@@ -11,7 +11,9 @@ public class StaffHome {
     private JPanel mainPanel;
     private JButton btnVerificaCertificati;
     private JButton btnGestionePrenotazioni;
+    private JButton btnGestioneClienti;
     private JButton btnVisualizzaTurni;
+    private JButton btnGestisciTitoli;
     private JButton btnLogout;
 
     public JFrame frame;
@@ -24,10 +26,27 @@ public class StaffHome {
     public StaffHome(Controller controller, Staff staff, JFrame frameChiamante) {
         this.frameChiamante = frameChiamante;
 
+        btnGestisciTitoli.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new GestioneTitoliIngresso(controller, frame);
+                frame.setVisible(false);
+            }
+        });
+
         btnVerificaCertificati.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Controllo Certificati Medici e Varco Accessi");
+                new VerificaCertificati(controller, frame);
+                frame.setVisible(false);
+            }
+        });
+
+        btnGestioneClienti.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new GestioneClientiStaff(controller, frame);
+                frame.setVisible(false);
             }
         });
 

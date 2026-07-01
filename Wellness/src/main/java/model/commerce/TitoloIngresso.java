@@ -1,17 +1,13 @@
 package model.commerce;
 
-import model.enums.TipoTitolo;
-
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
 
-public abstract class TitoloIngresso {
+public class TitoloIngresso {
     private int id_titoloIngresso;
     private BigDecimal prezzo;
-    private TipoTitolo tipo;
+    private String tipo;
 
-    public TitoloIngresso(int id_titoloIngresso, BigDecimal prezzo, TipoTitolo tipo) {
+    public TitoloIngresso(int id_titoloIngresso, BigDecimal prezzo, String tipo) {
         this.id_titoloIngresso = id_titoloIngresso;
         this.prezzo = prezzo;
         this.tipo = tipo;
@@ -33,11 +29,11 @@ public abstract class TitoloIngresso {
         this.prezzo = prezzo;
     }
 
-    public TipoTitolo getTipo() {
+    public String getTipo() {
         return tipo;
     }
 
-    public void setTipo(TipoTitolo tipo) {
+    public void setTipo(String tipo) {
         this.tipo = tipo;
     }
 }

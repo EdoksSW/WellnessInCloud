@@ -5,53 +5,44 @@ import model.logistica.Turno;
 import model.utenti.Staff;
 
 import javax.swing.*;
-import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
 public class GestioneTurni {
 
+    private JPanel mainPanel;
+    private JLabel lblTitolo;
+    private JScrollPane scrollPane;
+    private JPanel listaPanel;
+    private JPanel panelBottoni;
+    private JButton btnAggiungi;
+    private JButton btnIndietro;
+
     public JFrame frame;
     private JFrame frameChiamante;
     private Controller controller;
     private Staff staff;
-    private JPanel listaPanel;
 
     public GestioneTurni(Controller controller, JFrame frameChiamante, Staff staff) {
         this.controller = controller;
         this.frameChiamante = frameChiamante;
         this.staff = staff;
 
-        frame = new JFrame("Turni - " + staff.getNome() + " " + staff.getCognome());
-        frame.setSize(600, 400);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        JLabel titolo = new JLabel("Turni di " + staff.getNome() + " " + staff.getCognome(), SwingConstants.CENTER);
-        titolo.setFont(new Font("Arial", Font.BOLD, 16));
-        mainPanel.add(titolo, BorderLayout.NORTH);
-
-        listaPanel = new JPanel();
         listaPanel.setLayout(new BoxLayout(listaPanel, BoxLayout.Y_AXIS));
-        mainPanel.add(new JScrollPane(listaPanel), BorderLayout.CENTER);
+        lblTitolo.setText("Turni di " + staff.getNome() + " " + staff.getCognome());
 
-        JPanel sud = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton btnAggiungi = new JButton("Aggiungi Turno");
         btnAggiungi.addActionListener(e -> aggiungiTurno());
-        JButton btnIndietro = new JButton("Indietro");
         btnIndietro.addActionListener(e -> {
             frameChiamante.setVisible(true);
             frame.dispose();
         });
-        sud.add(btnAggiungi);
-        sud.add(btnIndietro);
-        mainPanel.add(sud, BorderLayout.SOUTH);
 
+        frame = new JFrame("Turni - " + staff.getNome() + " " + staff.getCognome());
         frame.setContentPane(mainPanel);
+        frame.setSize(600, 400);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         aggiornaLista();
         frame.setVisible(true);
     }
@@ -63,19 +54,19 @@ public class GestioneTurni {
             listaPanel.add(new JLabel("Nessun turno assegnato."));
         } else {
             for (Turno t : turni) {
-                JPanel riga = new JPanel(new BorderLayout(10, 0));
+                JPanel riga = new JPanel(new java.awt.BorderLayout(10, 0));
                 riga.setBorder(BorderFactory.createEtchedBorder());
                 String info = "Data: " + t.getData() + "   |   " + t.getOraInizio() + " - " + t.getOraFine();
-                riga.add(new JLabel(info), BorderLayout.CENTER);
+                riga.add(new JLabel(info), java.awt.BorderLayout.CENTER);
 
-                JPanel azioni = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                JPanel azioni = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
                 JButton btnModifica = new JButton("Modifica");
                 btnModifica.addActionListener(e -> modificaTurno(t));
                 JButton btnRimuovi = new JButton("Rimuovi");
                 btnRimuovi.addActionListener(e -> rimuoviTurno(t));
                 azioni.add(btnModifica);
                 azioni.add(btnRimuovi);
-                riga.add(azioni, BorderLayout.EAST);
+                riga.add(azioni, java.awt.BorderLayout.EAST);
                 listaPanel.add(riga);
             }
         }

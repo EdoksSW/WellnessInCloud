@@ -6,6 +6,7 @@ import dao.CorsoDAO;
 import dao.ProdottoDAO;
 import dao.CategoriaDAO;
 import dao.ClienteDAO;
+import dao.TitoloIngressoDAO;
 import implementazioniPostgresDAO.*;
 import model.utenti.*;
 import model.enums.*;
@@ -132,6 +133,26 @@ public class Controller
         return categoriaDAO.rimuoviCategoria(idCategoria);
     }
 
+    public ArrayList<TitoloIngresso> getListaTitoli() {
+        TitoloIngressoDAO titoloDAO = new TitoloIngressoImplementazionePostgresDAO();
+        return titoloDAO.getAllTitoli();
+    }
+
+    public boolean aggiungiTitolo(String tipo, BigDecimal prezzo) {
+        TitoloIngressoDAO titoloDAO = new TitoloIngressoImplementazionePostgresDAO();
+        return titoloDAO.aggiungiTitolo(tipo, prezzo);
+    }
+
+    public boolean modificaTitolo(int idTitolo, String tipo, BigDecimal prezzo) {
+        TitoloIngressoDAO titoloDAO = new TitoloIngressoImplementazionePostgresDAO();
+        return titoloDAO.modificaTitolo(idTitolo, tipo, prezzo);
+    }
+
+    public boolean rimuoviTitolo(int idTitolo) {
+        TitoloIngressoDAO titoloDAO = new TitoloIngressoImplementazionePostgresDAO();
+        return titoloDAO.rimuoviTitolo(idTitolo);
+    }
+
     public String messaggioAccessoNegato(Utente u) {
         if (u instanceof Cliente) {
             Cliente cliente = (Cliente) u;
@@ -151,7 +172,7 @@ public class Controller
             for (Utente u : utenti) {
                 if (u.getEmail().equalsIgnoreCase(email) || u.getCodiceFiscale().equalsIgnoreCase(cf)) return false;
             }
-            utenti.add(new Cliente(cf, nome, cognome, email, telefono, password, dataNascita, eta, indirizzo, numCivico, cap, StatoAccount.ATTIVO));
+            utenti.add(new Cliente(cf, nome, cognome, email, telefono, password, dataNascita, eta, indirizzo, numCivico, cap, null, StatoAccount.ATTIVO));
             return true;
         }
         return false;
@@ -163,7 +184,7 @@ public class Controller
             for (Utente u : utenti) {
                 if (u.getEmail().equalsIgnoreCase(email) || u.getCodiceFiscale().equalsIgnoreCase(cf)) return false;
             }
-            utenti.add(new Staff(cf, nome, cognome, email, telefono, password, dataNascita, eta, qualifica, iban, ruolo));
+            utenti.add(new Staff(cf, nome, cognome, email, telefono, password, dataNascita, eta, null, 0, null, null, qualifica, iban, ruolo));
             return true;
         }
         return false;
@@ -204,6 +225,45 @@ public class Controller
     {
         ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
         return clienteDAO.ottieniPrenotazioniCliente(cliente);
+    }
+
+    public List<Ordine> ottieniStoricoOrdiniCliente(Cliente cliente) {
+        ClienteImplementazionePostgresDAO clienteDAO = new ClienteImplementazionePostgresDAO();
+        return clienteDAO.ottieniStoricoOrdini(cliente);
+    }
+
+    public ArrayList<Cliente> getListaClientiDaStaff() {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.getAllClientiDaStaff();
+    }
+
+    public boolean aggiungiClienteTramiteStaff(Cliente nuovoCliente) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.aggiungiClienteDaStaff(nuovoCliente);
+    }
+
+    public boolean modificaClienteTramiteStaff(Cliente clienteModificato) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.modificaClienteDaStaff(clienteModificato);
+    }
+
+    public boolean rimuoviClienteTramiteStaff(String codiceFiscale) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.rimuoviClienteDaStaff(codiceFiscale);
+    }
+
+    public String ottieniStatoCertificatoStaff(String codiceFiscale) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        LocalDate scadenza = staffDAO.getCertificatoDaStaff(codiceFiscale);
+
+        if (scadenza == null) return "Nessun certificato registrato";
+        if (scadenza.isBefore(LocalDate.now())) return "SCADUTO (Scadenza: " + scadenza + ")";
+        return "Valido fino al: " + scadenza;
+    }
+
+    public boolean aggiornaScadenzaCertificatoStaff(String cf, LocalDate nuovaScadenza) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.aggiornaCertificatoDaStaff(cf, nuovaScadenza);
     }
 }
 

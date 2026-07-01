@@ -5,56 +5,45 @@ import model.commerce.Categoria;
 import model.commerce.Prodotto;
 
 import javax.swing.*;
-import java.awt.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class GestionePrezzario {
 
+    private JPanel mainPanel;
+    private JLabel lblTitolo;
+    private JScrollPane scrollPane;
+    private JPanel listaPanel;
+    private JPanel panelBottoni;
+    private JButton btnAggiungi;
+    private JButton btnCategorie;
+    private JButton btnIndietro;
+
     public JFrame frame;
     private JFrame frameChiamante;
     private Controller controller;
-    private JPanel listaPanel;
 
     public GestionePrezzario(Controller controller, JFrame frameChiamante) {
         this.controller = controller;
         this.frameChiamante = frameChiamante;
 
-        frame = new JFrame("Wellness In Cloud - Gestione Prezzario");
-        frame.setSize(700, 420);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        JLabel titolo = new JLabel("Elenco Prodotti", SwingConstants.CENTER);
-        titolo.setFont(new Font("Arial", Font.BOLD, 18));
-        mainPanel.add(titolo, BorderLayout.NORTH);
-
-        listaPanel = new JPanel();
         listaPanel.setLayout(new BoxLayout(listaPanel, BoxLayout.Y_AXIS));
-        mainPanel.add(new JScrollPane(listaPanel), BorderLayout.CENTER);
 
-        JPanel sud = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton btnAggiungi = new JButton("Aggiungi Prodotto");
         btnAggiungi.addActionListener(e -> aggiungiProdotto());
-        JButton btnCategorie = new JButton("Gestisci Categorie");
         btnCategorie.addActionListener(e -> {
             new GestioneCategorie(controller, frame);
             frame.setVisible(false);
         });
-        JButton btnIndietro = new JButton("Indietro");
         btnIndietro.addActionListener(e -> {
             frameChiamante.setVisible(true);
             frame.dispose();
         });
-        sud.add(btnAggiungi);
-        sud.add(btnCategorie);
-        sud.add(btnIndietro);
-        mainPanel.add(sud, BorderLayout.SOUTH);
 
+        frame = new JFrame("Wellness In Cloud - Gestione Prezzario");
         frame.setContentPane(mainPanel);
+        frame.setSize(700, 420);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         aggiornaLista();
         frame.setVisible(true);
     }
@@ -66,23 +55,23 @@ public class GestionePrezzario {
             listaPanel.add(new JLabel("Nessun prodotto presente."));
         } else {
             for (Prodotto p : prodotti) {
-                JPanel riga = new JPanel(new BorderLayout(10, 0));
+                JPanel riga = new JPanel(new java.awt.BorderLayout(10, 0));
                 riga.setBorder(BorderFactory.createEtchedBorder());
                 String categoria = p.getCategoria() == null ? "Nessuna" : p.getCategoria().getNome();
                 String info = p.getNome()
                         + "   |   Prezzo: " + p.getPrezzo() + " EUR"
                         + "   |   Giacenza: " + p.getGiacenza()
                         + "   |   Categoria: " + categoria;
-                riga.add(new JLabel(info), BorderLayout.CENTER);
+                riga.add(new JLabel(info), java.awt.BorderLayout.CENTER);
 
-                JPanel azioni = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+                JPanel azioni = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
                 JButton btnModifica = new JButton("Modifica");
                 btnModifica.addActionListener(e -> modificaProdotto(p));
                 JButton btnRimuovi = new JButton("Rimuovi");
                 btnRimuovi.addActionListener(e -> rimuoviProdotto(p));
                 azioni.add(btnModifica);
                 azioni.add(btnRimuovi);
-                riga.add(azioni, BorderLayout.EAST);
+                riga.add(azioni, java.awt.BorderLayout.EAST);
                 listaPanel.add(riga);
             }
         }

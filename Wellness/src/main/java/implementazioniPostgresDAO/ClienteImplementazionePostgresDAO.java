@@ -40,7 +40,8 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     @Override
     public Cliente trovaPerCodiceFiscale(String codiceFiscale)
     {
-        String query="SELECT * FROM cliente WHERE codicefiscale = ? ;";
+        String query="SELECT u.nome, u.cognome, u.email, u.telefono, u.password, u.datanascita, u.eta, u.via, u.civico, u.cap, u.carta_fedelta, c.stato_account " +
+                "FROM cliente c JOIN utente u ON c.codice_fiscale = u.codice_fiscale WHERE c.codice_fiscale = ? ;";
 
         try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
         {
@@ -56,6 +57,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                  int numCivico=resultSet.getInt("civico");
                  String cap=resultSet.getString("cap");
                  int eta=resultSet.getInt("eta");
+                 String cartaFedelta=resultSet.getString("carta_fedelta");
 
                  String stato_acc=resultSet.getString("stato_account");
                  StatoAccount statoAccount=StatoAccount.valueOf(stato_acc.trim().toUpperCase());
@@ -65,7 +67,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                  {
                      dataNascita=resultSet.getDate("datanascita").toLocalDate();
                  }
-                 return new Cliente(codiceFiscale,nome, cognome, email, telefono, password, dataNascita, eta, via, numCivico, cap, statoAccount);
+                 return new Cliente(codiceFiscale,nome, cognome, email, telefono, password, dataNascita, eta, via, numCivico, cap, cartaFedelta, statoAccount);
             }
         }catch(SQLException e) {
             System.out.println("Errore SQL in trovaPerCodiceFiscale: " + e.getMessage());
@@ -81,18 +83,18 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                 "prodotto.id_prodotto, " +
                 "prodotto.nome, " +
                 "prodotto.id_categoria, " +
-                "categoria.cat_prodotto, " +
+                "categoria.nome AS categoria_nome, " +
                 "dettaglio_carrello.quantita, " +
                 "prodotto.giacenza," +
                 "prodotto.prezzo, " +
                 "carrello.totale, " +
                 "carrello.id_carrello " +
                 "FROM cliente " +
-                "JOIN carrello ON carrello.cf_cliente = cliente.codicefiscale " +
+                "JOIN carrello ON carrello.cf_cliente = cliente.codice_fiscale " +
                 "JOIN dettaglio_carrello ON carrello.id_carrello = dettaglio_carrello.id_carrello " +
                 "JOIN prodotto ON dettaglio_carrello.id_prodotto = prodotto.id_prodotto " +
                 "LEFT JOIN categoria ON prodotto.id_categoria = categoria.id_categoria " +
-                "WHERE cliente.codicefiscale = ?";
+                "WHERE cliente.codice_fiscale = ?";
 
         Carrello carrello=null;
 
@@ -117,7 +119,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                         int idCategoria=resultSet.getInt("id_categoria");
                         if(!resultSet.wasNull())
                         {
-                            categoria=new Categoria(idCategoria, resultSet.getString("cat_prodotto"));
+                            categoria=new Categoria(idCategoria, resultSet.getString("categoria_nome"));
                         }
 
                         Prodotto prodotto=new Prodotto(id_prodotto, nome, prezzo, giacenza, categoria);
@@ -318,9 +320,97 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
 
     @Override
     public List<Ordine> ottieniStoricoOrdini(Cliente cliente) {
-        List<Ordine> storicoOrdini=new ArrayList<>();
+        List<Ordine> storicoOrdini = new ArrayList<>();
 
-        String query="SELECT" +
-                "o.id_ordine, o.data AS data_ordine, "
+        String query = "SELECT " +
+                "ordine.id_ordine, " +
+                "ordine.data_ordine, " +
+                "ordine.stato AS stato_ordine, " +
+                "ordine.totale AS totale_ordine, " +
+                "pagamento.id_pagamento, " +
+                "pagamento.importo AS importo_pagamento, " +
+                "pagamento.metodo AS metodo_pagamento " +
+                "FROM ordine " +
+                "LEFT JOIN pagamento ON pagamento.id_ordine = ordine.id_ordine " +
+                "WHERE ordine.cf_cliente = ? " +
+                "ORDER BY ordine.data_ordine DESC;";
+
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(query)) {
+            preparedStatement.setString(1, cliente.getCodiceFiscale());
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Ordine ordine = new Ordine();
+                    ordine.setId_ordine(resultSet.getInt("id_ordine"));
+                    ordine.setData_ordine(resultSet.getDate("data_ordine").toLocalDate());
+                    ordine.setStato(model.enums.StatoOrdine.fromLabel(resultSet.getString("stato_ordine")));
+                    ordine.setTotale(resultSet.getBigDecimal("totale_ordine"));
+
+                    int idPagamento = resultSet.getInt("id_pagamento");
+                    if (!resultSet.wasNull()) {
+                        Pagamento pagamento = new Pagamento();
+                        pagamento.setId_pagamento(idPagamento);
+                        pagamento.setImporto(resultSet.getBigDecimal("importo_pagamento"));
+                        pagamento.setMetodo(resultSet.getString("metodo_pagamento"));
+                        ordine.setPagamento(pagamento);
+                    }
+
+                    ordine.setDettagli(ottieniDettagliOrdine(ordine.getId_ordine()));
+                    storicoOrdini.add(ordine);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Errore nel recupero dello storico ordini-> " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return storicoOrdini;
+    }
+
+    @Override
+    public List<OrdineDettaglio> ottieniDettagliOrdine(int idOrdine) {
+        List<OrdineDettaglio> listaDettagli = new ArrayList<>();
+
+        String query = "SELECT " +
+                "ordine_dettaglio.quantita, " +
+                "prodotto.id_prodotto, " +
+                "prodotto.nome AS nome_prodotto, " +
+                "prodotto.prezzo, " +
+                "prodotto.giacenza, " +
+                "prodotto.id_categoria, " +
+                "categoria.nome AS nome_categoria " +
+                "FROM ordine_dettaglio " +
+                "JOIN prodotto ON ordine_dettaglio.id_prodotto = prodotto.id_prodotto " +
+                "LEFT JOIN categoria ON prodotto.id_categoria = categoria.id_categoria " +
+                "WHERE ordine_dettaglio.id_ordine = ?;";
+
+        try (PreparedStatement preparedStatement = this.connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, idOrdine);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Categoria categoria = null;
+                    int idCategoria = resultSet.getInt("id_categoria");
+                    if (!resultSet.wasNull()) {
+                        categoria = new Categoria(idCategoria, resultSet.getString("nome_categoria"));
+                    }
+
+                    int idProdotto = resultSet.getInt("id_prodotto");
+                    String nomeProdotto = resultSet.getString("nome_prodotto");
+                    BigDecimal prezzoProdotto = resultSet.getBigDecimal("prezzo");
+                    int giacenza = resultSet.getInt("giacenza");
+
+                    Prodotto prodotto = new Prodotto(idProdotto, nomeProdotto, prezzoProdotto, giacenza, categoria);
+
+                    int quantita = resultSet.getInt("quantita");
+                    listaDettagli.add(new OrdineDettaglio(prodotto, quantita));
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Errore nel recupero dei dettagli dell'ordine-> " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return listaDettagli;
     }
 }

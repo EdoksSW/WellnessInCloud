@@ -2,10 +2,11 @@ package dao;
 
 import model.commerce.Carrello;
 import model.commerce.Iscrizione;
+import model.commerce.Ordine;
+import model.commerce.OrdineDettaglio;
 import model.logistica.Prenotazione;
 import model.utenti.Cliente;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface ClienteDAO
@@ -32,5 +33,7 @@ public interface ClienteDAO
     //Elenca di tutte le prenotazioni del Cliente
     List<Prenotazione> ottieniPrenotazioniCliente(Cliente cliente);
 
-    List<model.commerce.Ordine> ottieniStoricoOrdini(Cliente cliente);
+    List<Ordine> ottieniStoricoOrdini(Cliente cliente);
+
+    List<OrdineDettaglio> ottieniDettagliOrdine(int idOrdine);
 }

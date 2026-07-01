@@ -320,7 +320,47 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     public List<Ordine> ottieniStoricoOrdini(Cliente cliente) {
         List<Ordine> storicoOrdini=new ArrayList<>();
 
-        String query="SELECT" +
-                "o.id_ordine, o.data AS data_ordine, "
+        String query="SELECT " +
+                "ordine.id_ordine, " +
+                "ordine.data_ordine, " +
+                "ordine.stato AS stato_ordine, " +
+                "ordine.totale AS totale_ordine, " +
+                "pagamento.id_pagamento, " +
+                "pagamento.importo AS importo_pagamento, " +
+                "pagamento.metodo AS metodo_pagamento, " +
+                "ordine_dettaglio.quantita, " +
+                "prodotto.id_prodotto, " +
+                "prodotto.nome AS nome_prodotto, " +
+                "prodotto.prezzo " +
+                "FROM ordine " +
+                "JOIN pagamento ON ordine.id_pagamento = pagamento.id_pagamento " + // <--- JOIN con Pagamento
+                "JOIN ordine_dettaglio ON ordine.id_ordine = ordine_dettaglio.id_ordine " +
+                "JOIN prodotto ON ordine_dettaglio.id_prodotto = prodotto.id_prodotto " +
+                "WHERE ordine.cf_cliente = ? " +
+                "ORDER BY ordine.data_ordine DESC, ordine.id_ordine DESC;";
+
+        try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
+        {
+            preparedStatement.setString(1, cliente.getCodiceFiscale());
+
+            try(ResultSet resultSet= preparedStatement.executeQuery())
+            {
+                model.commerce.Ordine ordine=null;
+
+                while(resultSet.next())
+                {
+                    int id_ordine=resultSet.getInt("id_ordine");
+
+                    if(ordine==null || ordine.getId_ordine() != id_ordine)
+                    {
+                        LocalDate dataOrdine=resultSet.getDate("data_ordine").toLocalDate();
+                        String stato_ordine=resultSet.getString("stato");
+                        BigDecimal totale=resultSet.getBigDecimal("totale");
+
+                        ordine=new Ordine(id_ordine, dataOrdine, totale,stato_ordine, )
+                    }
+                }
+            }
+        }
     }
 }

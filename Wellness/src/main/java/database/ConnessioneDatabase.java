@@ -11,8 +11,8 @@ public class ConnessioneDatabase {
     public Connection connection = null;
 
     private String nome = "postgres";
-    private String password = "kazekage02";
-    private String url = "jdbc:postgresql://localhost:5432/bho";
+    private String password = "password";
+    private String url = "jdbc:postgresql://localhost:5432/mywellness";
     private String driver = "org.postgresql.Driver";
 
     private ConnessioneDatabase() throws SQLException {

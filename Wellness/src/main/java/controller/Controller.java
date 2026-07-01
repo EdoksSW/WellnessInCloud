@@ -205,6 +205,41 @@ public class Controller
         ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
         return clienteDAO.ottieniPrenotazioniCliente(cliente);
     }
+
+
+    public ArrayList<Cliente> getListaClientiDaStaff() {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.getAllClientiDaStaff();
+    }
+
+    public boolean aggiungiClienteTramiteStaff(Cliente nuovoCliente) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.aggiungiClienteDaStaff(nuovoCliente);
+    }
+
+    public boolean modificaClienteTramiteStaff(Cliente clienteModificato) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.modificaClienteDaStaff(clienteModificato);
+    }
+
+    public boolean rimuoviClienteTramiteStaff(String codiceFiscale) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.rimuoviClienteDaStaff(codiceFiscale);
+    }
+
+    public String ottieniStatoCertificatoStaff(String codiceFiscale) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        LocalDate scadenza = staffDAO.getCertificatoDaStaff(codiceFiscale);
+
+        if (scadenza == null) return "Nessun certificato registrato";
+        if (scadenza.isBefore(LocalDate.now())) return "SCADUTO (Scadenza: " + scadenza + ")";
+        return "Valido fino al: " + scadenza;
+    }
+
+    public boolean aggiornaScadenzaCertificatoStaff(String cf, LocalDate nuovaScadenza) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.aggiornaCertificatoDaStaff(cf, nuovaScadenza);
+    }
 }
 
 

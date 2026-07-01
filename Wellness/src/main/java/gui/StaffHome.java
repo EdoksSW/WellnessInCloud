@@ -13,6 +13,7 @@ public class StaffHome {
     private JButton btnGestionePrenotazioni;
     private JButton btnVisualizzaTurni;
     private JButton btnLogout;
+    private JButton btnGestioneClienti; // Assicurati di aggiungere questo bottone nel file .form
 
     public JFrame frame;
     private JFrame frameChiamante;
@@ -24,10 +25,20 @@ public class StaffHome {
     public StaffHome(Controller controller, Staff staff, JFrame frameChiamante) {
         this.frameChiamante = frameChiamante;
 
+        // Pulsante Gestione e Verifica Certificati Medici
         btnVerificaCertificati.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Controllo Certificati Medici e Varco Accessi");
+                new VerificaCertificati(controller, frame);
+                frame.setVisible(false);
+            }
+        });
+
+        btnGestioneClienti.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new GestioneClientiStaff(controller, frame);
+                frame.setVisible(false);
             }
         });
 

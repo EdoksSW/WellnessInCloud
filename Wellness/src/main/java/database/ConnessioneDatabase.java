@@ -12,7 +12,7 @@ public class ConnessioneDatabase {
 
     private String nome = "postgres";
     private String password = "password";
-    private String url = "jdbc:postgresql://localhost:5432/mywellness";
+    private String url = "jdbc:postgresql://localhost:5432/Wellness";
     private String driver = "org.postgresql.Driver";
 
     private ConnessioneDatabase() throws SQLException {

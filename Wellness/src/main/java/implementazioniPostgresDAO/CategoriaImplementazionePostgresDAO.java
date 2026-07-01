@@ -25,11 +25,11 @@ public class CategoriaImplementazionePostgresDAO implements CategoriaDAO {
     @Override
     public ArrayList<Categoria> getAllCategorie() {
         ArrayList<Categoria> daRestituire = new ArrayList<>();
-        String query = "SELECT id_categoria, cat_prodotto FROM categoria ORDER BY cat_prodotto;";
+        String query = "SELECT id_categoria, nome FROM categoria ORDER BY nome;";
         try (PreparedStatement ps = this.connection.prepareStatement(query);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                daRestituire.add(new Categoria(rs.getInt("id_categoria"), rs.getString("cat_prodotto")));
+                daRestituire.add(new Categoria(rs.getInt("id_categoria"), rs.getString("nome")));
             }
         } catch (SQLException e) {
             System.err.println("Errore durante la lettura delle categorie: " + e.getMessage());
@@ -40,7 +40,7 @@ public class CategoriaImplementazionePostgresDAO implements CategoriaDAO {
 
     @Override
     public boolean aggiungiCategoria(String nome) {
-        String query = "INSERT INTO categoria (cat_prodotto) VALUES (?);";
+        String query = "INSERT INTO categoria (nome) VALUES (?);";
         try (PreparedStatement ps = this.connection.prepareStatement(query)) {
             ps.setString(1, nome);
             return ps.executeUpdate() > 0;
@@ -53,7 +53,7 @@ public class CategoriaImplementazionePostgresDAO implements CategoriaDAO {
 
     @Override
     public boolean modificaCategoria(int idCategoria, String nome) {
-        String query = "UPDATE categoria SET cat_prodotto = ? WHERE id_categoria = ?;";
+        String query = "UPDATE categoria SET nome = ? WHERE id_categoria = ?;";
         try (PreparedStatement ps = this.connection.prepareStatement(query)) {
             ps.setString(1, nome);
             ps.setInt(2, idCategoria);

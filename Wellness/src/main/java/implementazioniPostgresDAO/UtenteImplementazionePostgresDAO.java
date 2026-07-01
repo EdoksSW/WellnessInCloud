@@ -30,14 +30,16 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
     @Override
     public Utente loginDB(String email, String password) {
         String query =
-                "WITH utenti AS (" +
-                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, eta, via, civico, cap, stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Cliente' AS ruol FROM cliente " +
-                "  UNION ALL " +
-                "  SELECT email, password, codicefiscale, nome, cognome, telefono, datanascita, eta, via, civico, cap, NULL AS stato_account, iban, ruolo, qualifica, 'Staff' AS ruol FROM staff " +
-                "  UNION ALL " +
-                "  SELECT email, password, codicefiscale, nome, cognome, NULL AS telefono, datanascita, NULL AS eta, NULL AS via, NULL AS civico, NULL AS cap, NULL AS stato_account, NULL AS iban, NULL AS ruolo, NULL AS qualifica, 'Admin' AS ruol FROM admin " +
-                ") " +
-                "SELECT * FROM utenti WHERE email = ? AND password = ?;";
+                "SELECT u.codice_fiscale, u.nome, u.cognome, u.telefono, u.email, u.password, u.datanascita, u.eta, u.via, u.civico, u.cap, u.carta_fedelta, " +
+                "c.stato_account, s.ruolo, s.qualifica, s.iban, " +
+                "(a.codice_fiscale IS NOT NULL) AS is_admin, " +
+                "(c.codice_fiscale IS NOT NULL) AS is_cliente, " +
+                "(s.codice_fiscale IS NOT NULL) AS is_staff " +
+                "FROM utente u " +
+                "LEFT JOIN admin a ON a.codice_fiscale = u.codice_fiscale " +
+                "LEFT JOIN cliente c ON c.codice_fiscale = u.codice_fiscale " +
+                "LEFT JOIN staff s ON s.codice_fiscale = u.codice_fiscale " +
+                "WHERE u.email = ? AND u.password = ?;";
 
         try (PreparedStatement preparedStatement = this.connection.prepareStatement(query)) {
             preparedStatement.setString(1, email);
@@ -45,33 +47,30 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    String codiceFiscale = resultSet.getString("codicefiscale");
+                    String codiceFiscale = resultSet.getString("codice_fiscale");
                     String nome = resultSet.getString("nome");
                     String cognome = resultSet.getString("cognome");
                     String telefono = resultSet.getString("telefono");
-                    String ruol = resultSet.getString("ruol");
+                    int eta = resultSet.getInt("eta");
+                    String via = resultSet.getString("via");
+                    int civico = resultSet.getInt("civico");
+                    String cap = resultSet.getString("cap");
+                    String cartaFedelta = resultSet.getString("carta_fedelta");
 
                     LocalDate dataNascita = null;
                     if (resultSet.getDate("datanascita") != null) {
                         dataNascita = resultSet.getDate("datanascita").toLocalDate();
                     }
 
-                    int eta = resultSet.getInt("eta");
-
-                    switch (ruol) {
-                        case "Admin":
-                            return new Admin(codiceFiscale, nome, cognome, email, telefono, password, dataNascita);
-                        case "Staff":
-                            return new Staff(codiceFiscale, nome, cognome, email, telefono, password, dataNascita, eta,
-                                    resultSet.getString("qualifica"), resultSet.getString("iban"),
-                                    RuoloStaff.valueOf(resultSet.getString("ruolo")));
-                        default:
-                            String via = resultSet.getString("via");
-                            String cap = resultSet.getString("cap");
-                            String stato = resultSet.getString("stato_account");
-                            int numCivico = resultSet.getInt("civico");
-                            return new Cliente(codiceFiscale, nome, cognome, email, telefono, password, dataNascita, eta,
-                                    via, numCivico, cap, StatoAccount.valueOf(stato.toUpperCase()));
+                    if (resultSet.getBoolean("is_admin")) {
+                        return new Admin(codiceFiscale, nome, cognome, email, telefono, password, dataNascita, eta, via, civico, cap, cartaFedelta);
+                    } else if (resultSet.getBoolean("is_staff")) {
+                        return new Staff(codiceFiscale, nome, cognome, email, telefono, password, dataNascita, eta, via, civico, cap, cartaFedelta,
+                                resultSet.getString("qualifica"), resultSet.getString("iban"),
+                                RuoloStaff.valueOf(resultSet.getString("ruolo")));
+                    } else if (resultSet.getBoolean("is_cliente")) {
+                        return new Cliente(codiceFiscale, nome, cognome, email, telefono, password, dataNascita, eta, via, civico, cap, cartaFedelta,
+                                StatoAccount.valueOf(resultSet.getString("stato_account").toUpperCase()));
                     }
                 }
             }

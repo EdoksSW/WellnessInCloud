@@ -320,20 +320,24 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     public List<Ordine> ottieniStoricoOrdini(Cliente cliente) {
         List<Ordine> storicoOrdini=new ArrayList<>();
 
-        String query="SELECT" +
-                "o.id_ordine, " +
-                "o.data_ordine, " +
-                "o.stato " +
-                "o.totale " +
-                "od.quantita " +
-                "p.id_prodotto " +
-                "p.nome AS nome_prodotto " +
-                "p.prezzo " +
-                "FROM ordine o " +
-                "JOIN ordine_dettaglio od ON ordine.id_ordine = ordine_dettaglio.id_ordine " +
-                "JOIN prodotto p ON ordine_dettaglio-id_prodotto = prodotto.id_prodotto " +
-                "WHERE o.cf_cliente = ? " +
-                "ORDER BY o.data_ordine DESC, o.id_ordine DESC;";
+        String query="SELECT " +
+                "ordine.id_ordine, " +
+                "ordine.data_ordine, " +
+                "ordine.stato AS stato_ordine, " +
+                "ordine.totale AS totale_ordine, " +
+                "pagamento.id_pagamento, " +
+                "pagamento.importo AS importo_pagamento, " +
+                "pagamento.metodo AS metodo_pagamento, " +
+                "ordine_dettaglio.quantita, " +
+                "prodotto.id_prodotto, " +
+                "prodotto.nome AS nome_prodotto, " +
+                "prodotto.prezzo " +
+                "FROM ordine " +
+                "JOIN pagamento ON ordine.id_pagamento = pagamento.id_pagamento " + // <--- JOIN con Pagamento
+                "JOIN ordine_dettaglio ON ordine.id_ordine = ordine_dettaglio.id_ordine " +
+                "JOIN prodotto ON ordine_dettaglio.id_prodotto = prodotto.id_prodotto " +
+                "WHERE ordine.cf_cliente = ? " +
+                "ORDER BY ordine.data_ordine DESC, ordine.id_ordine DESC;";
 
         try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
         {

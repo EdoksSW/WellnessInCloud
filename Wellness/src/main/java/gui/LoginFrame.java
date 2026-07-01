@@ -15,7 +15,6 @@ public class LoginFrame {
     private JButton accediButton;
     private JLabel titolo;
     private JButton btnRegistrazione;
-
     public JFrame frame;
 
     public JPanel getLoginPanel() {

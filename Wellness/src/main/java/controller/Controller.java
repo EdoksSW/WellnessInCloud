@@ -184,3 +184,25 @@ public boolean effettuaIscrizioneCliente(Cliente cliente, TitoloIngresso titoloI
     ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
     return clienteDAO.effettuaIscrizione(iscrizione);
 }
+
+public boolean prenotaLezioneCliente(Cliente cliente, Lezione lezione, StatoPrenotazione statoPrenotazione)
+{
+   LocalDate dataPren=LocalDate.now();
+   LocalTime oraPren=LocalTime.now();
+
+   Prenotazione prenotazione=new Prenotazione(dataPren, oraPren, statoPrenotazione, cliente, lezione);
+   ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+   return clienteDAO.prenotaLezione(prenotazione);
+}
+
+public boolean annullaPrenotazioneCliente(int id_prenotazione)
+{
+    ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+    return clienteDAO.annullaPrenotazione(id_prenotazione);
+}
+
+public List<Prenotazione> ottieniPrenotazioniAttiveCliente(Cliente cliente)
+{
+    ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+    return clienteDAO.ottieniPrenotazioniCliente(cliente);
+}

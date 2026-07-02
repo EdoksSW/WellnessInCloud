@@ -6,6 +6,8 @@ import model.enums.StatoAccount;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 public class GestioneClientiStaff {
@@ -26,6 +28,7 @@ public class GestioneClientiStaff {
         this.controller = controller;
         this.frameChiamante = frameChiamante;
 
+        // Configurazione intestazione colonne JTable
         String[] colonne = {"Codice Fiscale", "Nome", "Cognome", "Email", "Telefono"};
         modelloTabella = new DefaultTableModel(colonne, 0) {
             @Override
@@ -33,6 +36,7 @@ public class GestioneClientiStaff {
         };
         tabellaClienti.setModel(modelloTabella);
 
+        // Bottone per tornare alla home dello staff
         btnIndietro.addActionListener(e -> {
             frameChiamante.setVisible(true);
             frame.dispose();
@@ -66,12 +70,12 @@ public class GestioneClientiStaff {
             String email = JOptionPane.showInputDialog(mainPanel, "Email:");
             String telefono = JOptionPane.showInputDialog(mainPanel, "Telefono:");
 
-            Cliente nuovo = new Cliente(cf, nome, cognome, email, telefono, "1234", null, 0, "", 0, "", null, StatoAccount.ATTIVO);
+            Cliente nuovo = new Cliente(cf, nome, cognome, email, telefono, "1234", null, 0, "", 0, "", "", StatoAccount.ATTIVO);
             if (controller.aggiungiClienteTramiteStaff(nuovo)) {
                 JOptionPane.showMessageDialog(mainPanel, "Cliente registrato con successo.");
                 aggiornaTabella();
             } else {
-                JOptionPane.showMessageDialog(mainPanel, "Errore inserimento. Controlla se il CF esiste gia'.");
+                JOptionPane.showMessageDialog(mainPanel, "Errore inserimento. Controlla se il CF esiste già.");
             }
         });
 
@@ -92,7 +96,7 @@ public class GestioneClientiStaff {
             String nuovaEmail = JOptionPane.showInputDialog(mainPanel, "Modifica Email:", modelloTabella.getValueAt(riga, 3));
             String nuovoTel = JOptionPane.showInputDialog(mainPanel, "Modifica Telefono:", modelloTabella.getValueAt(riga, 4));
 
-            Cliente modificato = new Cliente(cf, nuovoNome, nuovoCognome, nuovaEmail, nuovoTel, "", null, 0, "", 0, "", null, StatoAccount.ATTIVO);
+            Cliente modificato = new Cliente(cf, nuovoNome, nuovoCognome, nuovaEmail, nuovoTel, "", null, 0, "", 0, "", "", StatoAccount.ATTIVO);
             if (controller.modificaClienteTramiteStaff(modificato)) {
                 JOptionPane.showMessageDialog(mainPanel, "Dati aggiornati.");
                 aggiornaTabella();

@@ -10,31 +10,23 @@
     <children>
       <vspacer id="ff46a">
         <constraints>
-          <grid row="0" column="1" row-span="6" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="1" row-span="2" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
         </constraints>
       </vspacer>
       <component id="38435" class="javax.swing.JButton" binding="btnVerificaCertificati">
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Verifica Certificati e Accessi"/>
+          <text value="Verifica Certificati e Accesso"/>
         </properties>
       </component>
       <component id="2d94c" class="javax.swing.JButton" binding="btnGestionePrenotazioni">
         <constraints>
-          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <text value="Gestione Prenotazioni Clienti"/>
-        </properties>
-      </component>
-      <component id="7b5e1" class="javax.swing.JButton" binding="btnGestioneClienti">
-        <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Gestione Clienti"/>
+          <text value="Gestione Prenotazioni Clienti"/>
         </properties>
       </component>
       <component id="f36db" class="javax.swing.JButton" binding="btnVisualizzaTurni">
@@ -59,6 +51,14 @@
         </constraints>
         <properties>
           <text value="Disconnetti"/>
+        </properties>
+      </component>
+      <component id="54c99" class="javax.swing.JButton" binding="btnGestioneClienti">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Gestione iscrizioni"/>
         </properties>
       </component>
     </children>

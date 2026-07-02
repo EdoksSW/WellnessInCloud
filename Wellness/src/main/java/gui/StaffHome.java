@@ -10,8 +10,8 @@ import java.awt.event.ActionListener;
 public class StaffHome {
     private JPanel mainPanel;
     private JButton btnVerificaCertificati;
+    private JButton btnGestioneClienti; // Usato per la gestione iscrizioni/clienti
     private JButton btnGestionePrenotazioni;
-    private JButton btnGestioneClienti;
     private JButton btnVisualizzaTurni;
     private JButton btnGestisciTitoli;
     private JButton btnLogout;
@@ -25,14 +25,6 @@ public class StaffHome {
 
     public StaffHome(Controller controller, Staff staff, JFrame frameChiamante) {
         this.frameChiamante = frameChiamante;
-
-        btnGestisciTitoli.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                new GestioneTitoliIngresso(controller, frame);
-                frame.setVisible(false);
-            }
-        });
 
         btnVerificaCertificati.addActionListener(new ActionListener() {
             @Override
@@ -61,6 +53,14 @@ public class StaffHome {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Calendario Turni di Lavoro Personali");
+            }
+        });
+
+        btnGestisciTitoli.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new GestioneTitoliIngresso(controller, frame);
+                frame.setVisible(false);
             }
         });
 

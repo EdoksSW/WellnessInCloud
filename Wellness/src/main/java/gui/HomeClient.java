@@ -6,6 +6,8 @@ import model.utenti.Cliente;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class HomeClient {
 
@@ -17,6 +19,10 @@ public class HomeClient {
     private JLabel lblIndirizzo;
     private JLabel lblStato;
     private JButton btnLogout;
+    private JButton txtShop;
+    private JButton txtCarrello;
+    private JButton txtOrdini;
+    private JButton txtPrenotazioni;
 
     private Controller controller;
     private Cliente clienteLoggato;
@@ -52,5 +58,14 @@ public class HomeClient {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+        txtOrdini.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.setVisible(false);
+
+                new OrdiniClient(controller, clienteLoggato, frame);
+            }
+        });
     }
 }

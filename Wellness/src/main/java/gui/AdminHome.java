@@ -12,6 +12,7 @@ public class AdminHome {
     private JButton bntGestioneCorsi;
     private JButton btnGestionePrezzario;
     private JButton btnVisualizzaStaff;
+    private JButton btnGestisciTitoli;
     private JButton btnLogout;
 
     public JFrame frame;
@@ -38,6 +39,13 @@ public class AdminHome {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new GestioneStaff(controller, frame);
+                frame.setVisible(false);
+            }
+        });
+        btnGestisciTitoli.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new GestioneTitoliIngresso(controller, frame);
                 frame.setVisible(false);
             }
         });

@@ -11,6 +11,12 @@ public interface StaffDAO {
 
     ArrayList<Staff> getIstruttori();
 
+    boolean aggiungiStaff(Staff staff);
+
+    boolean modificaStaff(Staff staff);
+
+    boolean rimuoviStaff(String codiceFiscale);
+
     ArrayList<Cliente> getAllClientiDaStaff();
 
     boolean aggiungiClienteDaStaff(Cliente cliente);

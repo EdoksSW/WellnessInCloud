@@ -14,6 +14,7 @@ public class OrdiniClient {
     private JPanel ordiniClient;
     private JTable txtTabellaOrdini;
     private JButton txtHome;
+    private JScrollPane scrollOrdini;
 
     private Controller controller;
     private Cliente clienteLoggato;
@@ -49,6 +50,8 @@ public class OrdiniClient {
         }
 
         txtTabellaOrdini.setModel(defaultTableModel);
+
+        txtTabellaOrdini.setRowHeight(25);
         //Bottone Home
         txtHome.addActionListener(new ActionListener() {
             @Override
@@ -62,6 +65,7 @@ public class OrdiniClient {
         frame.setContentPane(ordiniClient);
         frame.setSize(600,400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 }

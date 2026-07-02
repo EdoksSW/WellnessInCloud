@@ -227,6 +227,18 @@ public class Controller
         return clienteDAO.ottieniPrenotazioniCliente(cliente);
     }
 
+    public Carrello ottieniCarrelloCliente(Cliente cliente)
+    {
+        ClienteImplementazionePostgresDAO clienteDAO= new ClienteImplementazionePostgresDAO();
+        return clienteDAO.ottieniCarrello(cliente);
+    }
+
+    public boolean finalizzaAcquisto(Cliente cliente)
+    {
+        ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+        return clienteDAO.completaAcquisto(cliente);
+    }
+
     public List<Ordine> ottieniStoricoOrdiniCliente(Cliente cliente) {
         ClienteImplementazionePostgresDAO clienteDAO = new ClienteImplementazionePostgresDAO();
         return clienteDAO.ottieniStoricoOrdini(cliente);

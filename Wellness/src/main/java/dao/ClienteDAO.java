@@ -36,4 +36,6 @@ public interface ClienteDAO
     List<Ordine> ottieniStoricoOrdini(Cliente cliente);
 
     List<OrdineDettaglio> ottieniDettagliOrdine(int idOrdine);
+
+    boolean completaAcquisto(Cliente cliente);
 }

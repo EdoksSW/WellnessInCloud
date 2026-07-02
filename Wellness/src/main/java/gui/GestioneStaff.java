@@ -1,9 +1,11 @@
 package gui;
 
 import controller.Controller;
+import model.enums.RuoloStaff;
 import model.utenti.Staff;
 
 import javax.swing.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class GestioneStaff {
@@ -13,6 +15,7 @@ public class GestioneStaff {
     private JScrollPane scrollPane;
     private JPanel listaPanel;
     private JPanel panelBottoni;
+    private JButton btnAggiungi;
     private JButton btnIndietro;
 
     public JFrame frame;
@@ -25,14 +28,15 @@ public class GestioneStaff {
 
         listaPanel.setLayout(new BoxLayout(listaPanel, BoxLayout.Y_AXIS));
 
+        btnAggiungi.addActionListener(e -> aggiungiStaff());
         btnIndietro.addActionListener(e -> {
             frameChiamante.setVisible(true);
             frame.dispose();
         });
 
-        frame = new JFrame("Wellness In Cloud - Visualizza Staff");
+        frame = new JFrame("Wellness In Cloud - Gestisci Staff");
         frame.setContentPane(mainPanel);
-        frame.setSize(650, 400);
+        frame.setSize(750, 420);
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         aggiornaLista();
@@ -54,16 +58,98 @@ public class GestioneStaff {
                         + "   |   Qualifica: " + s.getQualifica();
                 riga.add(new JLabel(info), java.awt.BorderLayout.CENTER);
 
+                JPanel azioni = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+                JButton btnModifica = new JButton("Modifica");
+                btnModifica.addActionListener(e -> modificaStaff(s));
+                JButton btnElimina = new JButton("Elimina");
+                btnElimina.addActionListener(e -> eliminaStaff(s));
                 JButton btnTurni = new JButton("Gestisci Turni");
                 btnTurni.addActionListener(e -> {
                     new GestioneTurni(controller, frame, s);
                     frame.setVisible(false);
                 });
-                riga.add(btnTurni, java.awt.BorderLayout.EAST);
+                azioni.add(btnModifica);
+                azioni.add(btnElimina);
+                azioni.add(btnTurni);
+                riga.add(azioni, java.awt.BorderLayout.EAST);
                 listaPanel.add(riga);
             }
         }
         listaPanel.revalidate();
         listaPanel.repaint();
+    }
+
+    private void aggiungiStaff() {
+        String cf = chiediTesto("Codice Fiscale", null);
+        if (cf == null) return;
+        String nome = chiediTesto("Nome", null);
+        if (nome == null) return;
+        String cognome = chiediTesto("Cognome", null);
+        if (cognome == null) return;
+        String email = chiediTesto("Email", null);
+        if (email == null) return;
+        String telefono = JOptionPane.showInputDialog(frame, "Telefono", "");
+        if (telefono == null) return;
+        String qualifica = JOptionPane.showInputDialog(frame, "Qualifica", "");
+        if (qualifica == null) return;
+        String iban = JOptionPane.showInputDialog(frame, "IBAN", "");
+        if (iban == null) return;
+        RuoloStaff ruolo = chiediRuolo(null);
+        if (ruolo == null) return;
+
+        Staff nuovo = new Staff(cf, nome, cognome, email, telefono, "staff123", null, 0, null, 0, null, null, qualifica, iban, ruolo);
+        boolean esito = controller.aggiungiStaff(nuovo);
+        JOptionPane.showMessageDialog(frame, esito ? "Staff aggiunto." : "Aggiunta non riuscita. Controlla che CF/email non esistano gia'.");
+        if (esito) aggiornaLista();
+    }
+
+    private void modificaStaff(Staff s) {
+        String nome = chiediTesto("Nome", s.getNome());
+        if (nome == null) return;
+        String cognome = chiediTesto("Cognome", s.getCognome());
+        if (cognome == null) return;
+        String email = chiediTesto("Email", s.getEmail());
+        if (email == null) return;
+        String telefono = JOptionPane.showInputDialog(frame, "Telefono", s.getTelefono() == null ? "" : s.getTelefono());
+        if (telefono == null) return;
+        String qualifica = JOptionPane.showInputDialog(frame, "Qualifica", s.getQualifica() == null ? "" : s.getQualifica());
+        if (qualifica == null) return;
+        String iban = JOptionPane.showInputDialog(frame, "IBAN", s.getIban() == null ? "" : s.getIban());
+        if (iban == null) return;
+        RuoloStaff ruolo = chiediRuolo(s.getRuolo());
+        if (ruolo == null) return;
+
+        Staff modificato = new Staff(s.getCodiceFiscale(), nome, cognome, email, telefono, s.getPassword(), s.getDataNascita(),
+                s.getEta(), s.getVia(), s.getCivico(), s.getCap(), s.getCartaFedelta(), qualifica, iban, ruolo);
+        boolean esito = controller.modificaStaff(modificato);
+        JOptionPane.showMessageDialog(frame, esito ? "Staff modificato." : "Modifica non riuscita.");
+        if (esito) aggiornaLista();
+    }
+
+    private void eliminaStaff(Staff s) {
+        int risposta = JOptionPane.showConfirmDialog(frame, "Eliminare lo staff " + s.getNome() + " " + s.getCognome() + "?",
+                "Conferma", JOptionPane.YES_NO_OPTION);
+        if (risposta != JOptionPane.YES_OPTION) return;
+        boolean esito = controller.rimuoviStaff(s.getCodiceFiscale());
+        JOptionPane.showMessageDialog(frame, esito ? "Staff eliminato."
+                : "Eliminazione non riuscita: lo staff potrebbe essere istruttore di un corso.");
+        if (esito) aggiornaLista();
+    }
+
+    private RuoloStaff chiediRuolo(RuoloStaff predefinito) {
+        RuoloStaff[] valori = RuoloStaff.values();
+        Object scelta = JOptionPane.showInputDialog(frame, "Ruolo", "Selezione ruolo",
+                JOptionPane.QUESTION_MESSAGE, null, valori, predefinito != null ? predefinito : valori[0]);
+        return (RuoloStaff) scelta;
+    }
+
+    private String chiediTesto(String etichetta, String predefinito) {
+        String s = JOptionPane.showInputDialog(frame, etichetta, predefinito == null ? "" : predefinito);
+        if (s == null) return null;
+        if (s.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Il campo non puo' essere vuoto.", "Errore", JOptionPane.ERROR_MESSAGE);
+            return null;
+        }
+        return s.trim();
     }
 }

@@ -37,3 +37,8 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# Impostazioni Database IntelliJ
+.idea/dataSources/
+.idea/dataSources.xml
+.idea/dataSources.local.xml

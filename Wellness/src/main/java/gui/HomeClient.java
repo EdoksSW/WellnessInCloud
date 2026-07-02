@@ -67,5 +67,12 @@ public class HomeClient {
                 new OrdiniClient(controller, clienteLoggato, frame);
             }
         });
+        txtCarrello.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.setVisible(false);
+                 new
+            }
+        });
     }
 }

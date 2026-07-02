@@ -237,7 +237,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
         {
             preparedStatement.setDate(1, java.sql.Date.valueOf(prenotazione.getDataPren()));
             preparedStatement.setTime(2, java.sql.Time.valueOf(prenotazione.getOraPren()));
-            preparedStatement.setString(3, prenotazione.getStato().name()); //.name() per farla breve converte l'oggetto enumerazione in una strinfa di testo "LISTA_ATTESA". E' una funzione che offre java
+            preparedStatement.setString(3, prenotazione.getStato().getLabel());
 
             //per chiavi esterne
             preparedStatement.setString(4, prenotazione.getCliente().getCodiceFiscale());
@@ -259,7 +259,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
         String query = "UPDATE prenotazione SET stato_prenotazione= ? WHERE id_prenotazione=?;";
         try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
         {
-            preparedStatement.setString(1, StatoPrenotazione.DISDETTA.name());
+            preparedStatement.setString(1, StatoPrenotazione.ANNULLATA.getLabel());
             preparedStatement.setInt(2, id_prenotazione);
 
             int righe=preparedStatement.executeUpdate();
@@ -280,12 +280,12 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                 "p.id_prenotazione, " +
                 "p.data_pren, " +
                 "p.ora_pren, " +
-                "p.stato.prenotazione, " +
+                "p.stato_prenotazione, " +
                 "l.id_lezione, " +
                 "l.nome " +
-                "FROM prenotazione p" +
+                "FROM prenotazione p " +
                 "JOIN lezione l ON p.id_lezione = l.id_lezione " +
-                "WHERE p.cf_cliente = ? AND p.stato_prenotazione != 'DISTETTA' " +
+                "WHERE p.cf_cliente = ? AND p.stato_prenotazione != 'annullata' " +
                 "ORDER BY p.data_pren DESC, p.ora_pren DESC;";
         try(PreparedStatement preparedStatement=this.connection.prepareStatement(query))
         {
@@ -304,7 +304,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                     LocalTime oraPren = resultSet.getTime("ora_pren").toLocalTime();
 
                     String stato_prenotazione=resultSet.getString("stato_prenotazione");
-                    StatoPrenotazione statoPrenotazione=StatoPrenotazione.valueOf(stato_prenotazione);
+                    StatoPrenotazione statoPrenotazione=StatoPrenotazione.fromLabel(stato_prenotazione);
 
                     Prenotazione prenotazione=new Prenotazione(dataPren, oraPren, statoPrenotazione, cliente, lezione);
                     listaPrenotazioni.add(prenotazione);

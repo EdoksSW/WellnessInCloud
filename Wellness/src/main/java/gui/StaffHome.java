@@ -13,6 +13,7 @@ public class StaffHome {
     private JButton btnGestioneClienti; // Usato per la gestione iscrizioni/clienti
     private JButton btnGestionePrenotazioni;
     private JButton btnVisualizzaTurni;
+    private JButton btnGestisciTitoli;
     private JButton btnLogout;
 
     public JFrame frame;
@@ -52,6 +53,14 @@ public class StaffHome {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Calendario Turni di Lavoro Personali");
+            }
+        });
+
+        btnGestisciTitoli.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new GestioneTitoliIngresso(controller, frame);
+                frame.setVisible(false);
             }
         });
 

@@ -58,10 +58,16 @@ public class GestioneCorsi {
                 riga.add(new JLabel(info), java.awt.BorderLayout.CENTER);
 
                 JPanel azioni = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
+                JButton btnLezioni = new JButton("Gestisci Lezioni");
+                btnLezioni.addActionListener(e -> {
+                    new GestioneLezioni(controller, frame, c);
+                    frame.setVisible(false);
+                });
                 JButton btnModifica = new JButton("Modifica");
                 btnModifica.addActionListener(e -> modificaCorso(c));
                 JButton btnRimuovi = new JButton("Rimuovi");
                 btnRimuovi.addActionListener(e -> rimuoviCorso(c));
+                azioni.add(btnLezioni);
                 azioni.add(btnModifica);
                 azioni.add(btnRimuovi);
                 riga.add(azioni, java.awt.BorderLayout.EAST);

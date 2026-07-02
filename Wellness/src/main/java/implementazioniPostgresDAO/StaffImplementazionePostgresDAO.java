@@ -83,6 +83,104 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
     }
 
     @Override
+    public boolean aggiungiStaff(Staff staff) {
+        String queryUtente = "INSERT INTO utente (codice_fiscale, nome, cognome, email, telefono, password, datanascita, eta, via, civico, cap, carta_fedelta) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        String queryStaff = "INSERT INTO staff (codice_fiscale, ruolo, qualifica, iban) VALUES (?, ?, ?, ?);";
+        try {
+            this.connection.setAutoCommit(false);
+            try (PreparedStatement psUtente = this.connection.prepareStatement(queryUtente)) {
+                psUtente.setString(1, staff.getCodiceFiscale());
+                psUtente.setString(2, staff.getNome());
+                psUtente.setString(3, staff.getCognome());
+                psUtente.setString(4, staff.getEmail());
+                psUtente.setString(5, staff.getTelefono());
+                psUtente.setString(6, staff.getPassword());
+                if (staff.getDataNascita() != null) {
+                    psUtente.setDate(7, Date.valueOf(staff.getDataNascita()));
+                } else {
+                    psUtente.setNull(7, java.sql.Types.DATE);
+                }
+                psUtente.setInt(8, staff.getEta());
+                psUtente.setString(9, staff.getVia());
+                psUtente.setInt(10, staff.getCivico());
+                psUtente.setString(11, staff.getCap());
+                psUtente.setString(12, staff.getCartaFedelta());
+                psUtente.executeUpdate();
+            }
+            try (PreparedStatement psStaff = this.connection.prepareStatement(queryStaff)) {
+                psStaff.setString(1, staff.getCodiceFiscale());
+                psStaff.setString(2, staff.getRuolo() != null ? staff.getRuolo().name() : null);
+                psStaff.setString(3, staff.getQualifica());
+                psStaff.setString(4, staff.getIban());
+                psStaff.executeUpdate();
+            }
+            this.connection.commit();
+            this.connection.setAutoCommit(true);
+            return true;
+        } catch (SQLException e) {
+            try {
+                this.connection.rollback();
+                this.connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            System.err.println("Errore durante l'aggiunta dello staff: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean modificaStaff(Staff staff) {
+        String queryUtente = "UPDATE utente SET nome = ?, cognome = ?, email = ?, telefono = ? WHERE codice_fiscale = ?;";
+        String queryStaff = "UPDATE staff SET qualifica = ?, iban = ?, ruolo = ? WHERE codice_fiscale = ?;";
+        try {
+            this.connection.setAutoCommit(false);
+            try (PreparedStatement psUtente = this.connection.prepareStatement(queryUtente)) {
+                psUtente.setString(1, staff.getNome());
+                psUtente.setString(2, staff.getCognome());
+                psUtente.setString(3, staff.getEmail());
+                psUtente.setString(4, staff.getTelefono());
+                psUtente.setString(5, staff.getCodiceFiscale());
+                psUtente.executeUpdate();
+            }
+            try (PreparedStatement psStaff = this.connection.prepareStatement(queryStaff)) {
+                psStaff.setString(1, staff.getQualifica());
+                psStaff.setString(2, staff.getIban());
+                psStaff.setString(3, staff.getRuolo() != null ? staff.getRuolo().name() : null);
+                psStaff.setString(4, staff.getCodiceFiscale());
+                psStaff.executeUpdate();
+            }
+            this.connection.commit();
+            this.connection.setAutoCommit(true);
+            return true;
+        } catch (SQLException e) {
+            try {
+                this.connection.rollback();
+                this.connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            System.err.println("Errore durante la modifica dello staff: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean rimuoviStaff(String codiceFiscale) {
+        String query = "DELETE FROM utente WHERE codice_fiscale = ?;";
+        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
+            ps.setString(1, codiceFiscale);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Errore durante la rimozione dello staff: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
     public ArrayList<Cliente> getAllClientiDaStaff() {
         ArrayList<Cliente> daRestituire = new ArrayList<>();
         String query = "SELECT u.codice_fiscale, u.nome, u.cognome, u.email, u.telefono, u.password, u.datanascita, u.eta, u.via, u.civico, u.cap, u.carta_fedelta, c.stato_account " +

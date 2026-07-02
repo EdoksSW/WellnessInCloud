@@ -82,16 +82,4 @@ public class UtenteImplementazionePostgresDAO implements UtenteDAO {
 
         return null;
     }
-
-    @Override
-    public boolean registraClienteDB(String cf, String nome, String cognome, String email, String telefono,
-                                     LocalDate dataNascita, int eta, String password, String indirizzo, int numCivico, String cap) {
-        return false;
-    }
-
-    @Override
-    public boolean registraStaffDB(String cf, String nome, String cognome, String email, String telefono,
-                                   LocalDate dataNascita, int eta, String password, String qualifica, String iban, RuoloStaff ruolo) {
-        return false;
-    }
 }

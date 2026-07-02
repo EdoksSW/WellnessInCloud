@@ -7,6 +7,7 @@ import dao.ProdottoDAO;
 import dao.CategoriaDAO;
 import dao.ClienteDAO;
 import dao.TitoloIngressoDAO;
+import dao.LezioneDAO;
 import implementazioniPostgresDAO.*;
 import model.utenti.*;
 import model.enums.*;
@@ -73,6 +74,21 @@ public class Controller
         return staffDAO.getIstruttori();
     }
 
+    public boolean aggiungiStaff(Staff staff) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.aggiungiStaff(staff);
+    }
+
+    public boolean modificaStaff(Staff staff) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.modificaStaff(staff);
+    }
+
+    public boolean rimuoviStaff(String codiceFiscale) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.rimuoviStaff(codiceFiscale);
+    }
+
     public ArrayList<Corso> getListaCorsi() {
         CorsoDAO corsoDAO = new CorsoImplementazionePostgresDAO();
         return corsoDAO.getAllCorsi();
@@ -91,6 +107,31 @@ public class Controller
     public boolean rimuoviCorso(int idCorso) {
         CorsoDAO corsoDAO = new CorsoImplementazionePostgresDAO();
         return corsoDAO.rimuoviCorso(idCorso);
+    }
+
+    public ArrayList<Lezione> getLezioniCorso(int idCorso) {
+        LezioneDAO lezioneDAO = new LezioneImplementazionePostgresDAO();
+        return lezioneDAO.getLezioniByCorso(idCorso);
+    }
+
+    public boolean aggiungiLezione(int idCorso, String nome, String descrizione, String giorno, LocalTime oraInizio, LocalTime oraFine, int idSala) {
+        LezioneDAO lezioneDAO = new LezioneImplementazionePostgresDAO();
+        return lezioneDAO.aggiungiLezione(idCorso, nome, descrizione, giorno, oraInizio, oraFine, idSala);
+    }
+
+    public boolean modificaLezione(int idLezione, String nome, String descrizione, String giorno, LocalTime oraInizio, LocalTime oraFine, int idSala) {
+        LezioneDAO lezioneDAO = new LezioneImplementazionePostgresDAO();
+        return lezioneDAO.modificaLezione(idLezione, nome, descrizione, giorno, oraInizio, oraFine, idSala);
+    }
+
+    public boolean rimuoviLezione(int idLezione) {
+        LezioneDAO lezioneDAO = new LezioneImplementazionePostgresDAO();
+        return lezioneDAO.rimuoviLezione(idLezione);
+    }
+
+    public ArrayList<Integer> getListaSale() {
+        LezioneDAO lezioneDAO = new LezioneImplementazionePostgresDAO();
+        return lezioneDAO.getSale();
     }
 
     public ArrayList<Prodotto> getListaProdotti() {
@@ -166,30 +207,6 @@ public class Controller
         return null;
     }
 
-    public boolean registraCliente(Utente esecutore, String cf, String nome, String cognome, String email, String telefono,
-                                   LocalDate dataNascita, int eta, String password, String indirizzo, int numCivico, String cap) {
-        if (esecutore instanceof Staff || esecutore instanceof Admin) {
-            for (Utente u : utenti) {
-                if (u.getEmail().equalsIgnoreCase(email) || u.getCodiceFiscale().equalsIgnoreCase(cf)) return false;
-            }
-            utenti.add(new Cliente(cf, nome, cognome, email, telefono, password, dataNascita, eta, indirizzo, numCivico, cap, null, StatoAccount.ATTIVO));
-            return true;
-        }
-        return false;
-    }
-
-    public boolean registraStaff(Utente esecutore, String cf, String nome, String cognome, String email, String telefono,
-                                 LocalDate dataNascita, int eta, String password, String qualifica, String iban, RuoloStaff ruolo) {
-        if (esecutore instanceof Admin) {
-            for (Utente u : utenti) {
-                if (u.getEmail().equalsIgnoreCase(email) || u.getCodiceFiscale().equalsIgnoreCase(cf)) return false;
-            }
-            utenti.add(new Staff(cf, nome, cognome, email, telefono, password, dataNascita, eta, null, 0, null, null, qualifica, iban, ruolo));
-            return true;
-        }
-        return false;
-
-}
     public List<Utente> getUtenti() {
         return utenti;
     }

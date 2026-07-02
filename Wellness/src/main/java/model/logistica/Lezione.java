@@ -9,7 +9,7 @@ public class Lezione {
     private String giorno;
     private LocalTime ora_inizio;
     private LocalTime oraFine;
-    private String sala;
+    private int id_sala;
 
     private int id_corso;
 
@@ -18,14 +18,14 @@ public class Lezione {
         this.nome = nome;
     }
 
-    public Lezione(int id_lezione, String nome, String descrizione, String giorno, LocalTime ora_inizio, LocalTime oraFine, String sala, int id_corso) {
+    public Lezione(int id_lezione, String nome, String descrizione, String giorno, LocalTime ora_inizio, LocalTime oraFine, int id_sala, int id_corso) {
         this.id_lezione = id_lezione;
         this.nome = nome;
         this.descrizione = descrizione;
         this.giorno = giorno;
         this.ora_inizio = ora_inizio;
         this.oraFine = oraFine;
-        this.sala = sala;
+        this.id_sala = id_sala;
         this.id_corso = id_corso;
     }
 
@@ -77,12 +77,12 @@ public class Lezione {
         this.oraFine = oraFine;
     }
 
-    public String getSala() {
-        return sala;
+    public int getId_sala() {
+        return id_sala;
     }
 
-    public void setSala(String sala) {
-        this.sala = sala;
+    public void setId_sala(int id_sala) {
+        this.id_sala = id_sala;
     }
 
     public int getId_corso() {

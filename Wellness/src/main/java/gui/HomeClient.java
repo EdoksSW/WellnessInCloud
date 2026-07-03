@@ -52,13 +52,6 @@ public class HomeClient {
             frame.dispose();
         });
 
-        frame = new JFrame("Wellness In Cloud - Area Cliente");
-        frame.setContentPane(panel1);
-        frame.setSize(500, 380);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-
         txtOrdini.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -71,8 +64,15 @@ public class HomeClient {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.setVisible(false);
-                 new
+                 new CarrelloClient(controller, clienteLoggato, frame);
             }
         });
+
+        frame = new JFrame("Wellness In Cloud - Area Cliente");
+        frame.setContentPane(panel1);
+        frame.setSize(500, 380);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
     }
 }

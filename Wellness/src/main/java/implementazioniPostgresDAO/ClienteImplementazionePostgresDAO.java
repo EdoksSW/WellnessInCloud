@@ -172,9 +172,9 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
             try(PreparedStatement psInserisci=this.connection.prepareStatement(queryInserisciDettaglio))
             {
                 //Ciclo la mappa dei prodotti (o la lista insomma) per prendere ogni elemento
-                for(Prodotto prodotto: carrello.getProdotti().keySet())
+                for(Prodotto prodotto: carrello.getMapCarrellol().keySet())
                 {
-                    int quantita=carrello.getProdotti().get(prodotto);
+                    int quantita=carrello.getMapCarrellol().get(prodotto);
                     psInserisci.setInt(1, carrello.getId_carrello());
                     psInserisci.setInt(2, prodotto.getId_prodotto());
                     psInserisci.setInt(3, quantita);
@@ -417,7 +417,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     public boolean completaAcquisto(Cliente cliente) {
         // Definizione delle query SQL basate sulle tabelle del nostro schema logico[cite: 1]
         String queryInfoCarrello = "SELECT id_carrello, totale FROM carrello WHERE cf_cliente = ?";
-        String queryInserisciOrdine = "INSERT INTO ordine (data_ordine, totale, stato, cf_cliente) VALUES (CURRENT_DATE, ?, 'IN_REVISIONE', ?) RETURNING id_ordine";
+        String queryInserisciOrdine = "INSERT INTO ordine (data_ordine, totale, stato, cf_cliente) VALUES (CURRENT_DATE, ?, 'in\nelaborazione', ?) RETURNING id_ordine";
         String querySpostaDettagli = "INSERT INTO ordine_dettaglio (id_ordine, id_prodotto, quantita) " +
                 "SELECT ?, id_prodotto, quantita FROM dettaglio_carrello WHERE id_carrello = ?";
         String querySvuotaCarrello = "DELETE FROM dettaglio_carrello WHERE id_carrello = ?";

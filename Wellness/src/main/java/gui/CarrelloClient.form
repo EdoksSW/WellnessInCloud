@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="gui.CarrelloClient">
+  <grid id="27dc6" binding="carrelloPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <grid id="2032b" binding="txtComandi" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="0">
+        <constraints border-constraint="North"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="4a95" class="javax.swing.JButton" binding="txtHome">
+            <constraints/>
+            <properties>
+              <text value="Home"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <scrollpane id="3320b" binding="scrollCarrello">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="774e2" class="javax.swing.JTable" binding="tabellaCarrello">
+            <constraints/>
+            <properties/>
+          </component>
+        </children>
+      </scrollpane>
+      <grid id="946b6" binding="lblCmAcquisti" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="2">
+        <constraints border-constraint="South"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="25170" class="javax.swing.JTextField" binding="lblTotale">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="7f791" class="javax.swing.JButton" binding="txtAcquista">
+            <constraints/>
+            <properties>
+              <text value="Acquista"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>

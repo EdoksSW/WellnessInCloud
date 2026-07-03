@@ -41,12 +41,14 @@ public class Carrello {
         this.id_carrello = id_carrello;
     }
 
-    public Map<Prodotto, Integer> getProdotti() {
+    public Map<Prodotto, Integer> getMapCarrellol() {
         return prodotti;
     }
 
     public void setProdotti(Map<Prodotto, Integer> prodotti) {
         this.prodotti = prodotti;
     }
+
+
 }
 

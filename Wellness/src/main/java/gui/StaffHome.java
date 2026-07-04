@@ -10,7 +10,7 @@ import java.awt.event.ActionListener;
 public class StaffHome {
     private JPanel mainPanel;
     private JButton btnVerificaCertificati;
-    private JButton btnGestioneClienti; // Usato per la gestione iscrizioni/clienti
+    private JButton btnGestioneClienti;
     private JButton btnGestionePrenotazioni;
     private JButton btnVisualizzaTurni;
     private JButton btnGestisciTitoli;
@@ -45,14 +45,15 @@ public class StaffHome {
         btnGestionePrenotazioni.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Registro Prenotazioni Lezioni");
+                new GestionePrenotazioniStaff(controller, frame);
+                frame.setVisible(false);
             }
         });
 
         btnVisualizzaTurni.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(mainPanel, "Apertura modulo: Calendario Turni di Lavoro Personali");
+                new VisualizzaTurniStaff(controller, staff.getCodiceFiscale());
             }
         });
 

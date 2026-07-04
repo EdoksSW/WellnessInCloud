@@ -333,7 +333,7 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                     String stato_prenotazione=resultSet.getString("stato_prenotazione");
                     StatoPrenotazione statoPrenotazione=StatoPrenotazione.fromLabel(stato_prenotazione);
 
-                    Prenotazione prenotazione=new Prenotazione(dataPren, oraPren, statoPrenotazione, cliente, lezione);
+                    Prenotazione prenotazione = new Prenotazione(idPrenotazione, dataPren, oraPren, statoPrenotazione, cliente, lezione);
                     listaPrenotazioni.add(prenotazione);
                 }
             }

@@ -67,7 +67,6 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
     public ArrayList<Staff> getIstruttori() {
         ArrayList<Staff> daRestituire = new ArrayList<>();
 
-        // MODIFICA: Aggiunto INNER JOIN anche qui
         String query = "SELECT u.codice_fiscale, u.nome, u.cognome, u.email, u.telefono, u.password, u.datanascita, u.eta, s.qualifica, s.iban, s.ruolo " +
                 "FROM utente u " +
                 "INNER JOIN staff s ON u.codice_fiscale = s.codice_fiscale " +
@@ -288,7 +287,6 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
 
     @Override
     public boolean modificaClienteDaStaff(model.utenti.Cliente cliente) {
-        // MODIFICA: Aggiorniamo la tabella utente, non più cliente
         String query = "UPDATE utente SET nome = ?, cognome = ?, email = ?, telefono = ?, datanascita = ? WHERE codice_fiscale = ?;";
         try (PreparedStatement ps = this.connection.prepareStatement(query)) {
             ps.setString(1, cliente.getNome());
@@ -313,7 +311,6 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
 
     @Override
     public boolean rimuoviClienteDaStaff(String codiceFiscale) {
-        // MODIFICA: Transazione per rimuovere prima il figlio (cliente) e poi il padre (utente)
         String queryCliente = "DELETE FROM cliente WHERE codice_fiscale = ?;";
         String queryUtente = "DELETE FROM utente WHERE codice_fiscale = ?;";
 
@@ -388,5 +385,69 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public String[] getDettagliAbbonamento(String codiceFiscale) {
+        String query = "SELECT t.tipo, i.data_inizio, i.data_fine " +
+                "FROM iscrizione i " +
+                "JOIN titolo_ingresso t ON i.id_titolo = t.id_titolo " +
+                "WHERE i.cf_cliente = ? " +
+                "ORDER BY i.id_iscrizione DESC LIMIT 1;";
+
+        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
+            ps.setString(1, codiceFiscale);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String tipo = rs.getString("tipo");
+                    java.sql.Date dataInizioSQL = rs.getDate("data_inizio");
+                    java.sql.Date dataFineSQL = rs.getDate("data_fine");
+
+                    String mesi = "0";
+                    if (dataInizioSQL != null && dataFineSQL != null) {
+                        long diffMesi = java.time.temporal.ChronoUnit.MONTHS.between(
+                                dataInizioSQL.toLocalDate(), dataFineSQL.toLocalDate().plusDays(1)
+                        );
+                        mesi = String.valueOf(diffMesi);
+                    }
+                    return new String[]{tipo, mesi};
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Errore in getDettagliAbbonamento: " + e.getMessage());
+        }
+        return new String[]{"Nessuno", "-"};
+    }
+
+    @Override
+    public java.util.List<model.logistica.Prenotazione> ottieniTuttePrenotazioni() {
+        java.util.List<model.logistica.Prenotazione> lista = new java.util.ArrayList<>();
+
+        String query = "SELECT p.id_prenotazione, p.data_pren, p.ora_pren, p.stato_prenotazione, p.cf_cliente, l.id_lezione, l.nome AS nome_lezione " +
+                "FROM prenotazione p JOIN lezione l ON p.id_lezione = l.id_lezione " +
+                "WHERE p.stato_prenotazione != 'annullata' " +
+                "ORDER BY p.data_pren DESC, p.ora_pren DESC;";
+
+        try (PreparedStatement ps = this.connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                int id = rs.getInt("id_prenotazione");
+                java.time.LocalDate data = rs.getDate("data_pren").toLocalDate();
+                java.time.LocalTime ora = rs.getTime("ora_pren").toLocalTime();
+                model.enums.StatoPrenotazione stato = model.enums.StatoPrenotazione.fromLabel(rs.getString("stato_prenotazione"));
+
+                // Creiamo un cliente "tappo" per memorizzare il codice fiscale da mostrare in tabella
+                String cfCliente = rs.getString("cf_cliente");
+                model.utenti.Cliente c = new model.utenti.Cliente(cfCliente, "", "", "", "", "", null, 0, "", 0, "", "", model.enums.StatoAccount.ATTIVO);
+
+                model.logistica.Lezione lez = new model.logistica.Lezione(rs.getInt("id_lezione"), rs.getString("nome_lezione"));
+
+                lista.add(new model.logistica.Prenotazione(id, data, ora, stato, c, lez));
+            }
+        } catch (SQLException e) {
+            System.err.println("Errore nel recupero di tutte le prenotazioni: " + e.getMessage());
+        }
+        return lista;
     }
 }

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="gui.ShopClient">
+  <grid id="27dc6" binding="shopPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="500" height="400"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <scrollpane id="54e52" binding="srollProdotti">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="56acd" class="javax.swing.JTable" binding="tabellaProdotti">
+            <constraints/>
+            <properties/>
+          </component>
+        </children>
+      </scrollpane>
+      <grid id="a8f1c" layout-manager="FlowLayout" hgap="5" vgap="5" flow-align="1">
+        <constraints border-constraint="South"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="6c047" class="javax.swing.JButton" binding="bntHome">
+            <constraints/>
+            <properties>
+              <text value="Home"/>
+            </properties>
+          </component>
+          <component id="bfd2e" class="javax.swing.JButton" binding="bntVaiAlCarrello">
+            <constraints/>
+            <properties>
+              <text value="Carrello"/>
+            </properties>
+          </component>
+          <component id="950f1" class="javax.swing.JButton" binding="bntAggiungi">
+            <constraints/>
+            <properties>
+              <text value="Aggiungi al Carrello"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>

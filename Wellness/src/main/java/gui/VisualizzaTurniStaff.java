@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class VisualizzaTurniStaff {
     private JPanel mainPanel;
     private JTable tableTurni;
-    private JButton btnIndietro; // Il nuovo bottone aggiunto!
+    private JButton btnIndietro;
     private DefaultTableModel modelloTabella;
     public JFrame frame;
 
@@ -33,7 +33,6 @@ public class VisualizzaTurniStaff {
             });
         }
 
-        // AZIONE: Quando clicchi Indietro, chiudi la finestra dei turni
         btnIndietro.addActionListener(e -> {
             frame.dispose();
         });
@@ -42,7 +41,6 @@ public class VisualizzaTurniStaff {
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(new JScrollPane(tableTurni), BorderLayout.CENTER);
 
-        // Aggiungiamo il pannello dei bottoni in basso per non farli schiacciare
         JPanel panelBottoni = new JPanel();
         panelBottoni.add(btnIndietro);
         mainPanel.add(panelBottoni, BorderLayout.SOUTH);

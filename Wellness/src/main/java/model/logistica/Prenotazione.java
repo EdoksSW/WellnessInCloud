@@ -7,14 +7,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Prenotazione {
-    private int idPrenotazione; // AGGIUNTO ID
+    private int idPrenotazione;
     private LocalDate dataPren;
     private LocalTime oraPren;
     private StatoPrenotazione stato;
     private Cliente cliente;
     private Lezione lezione;
 
-    // Costruttore AGGIORNATO con ID
     public Prenotazione(int idPrenotazione, LocalDate dataPren, LocalTime oraPren, StatoPrenotazione stato, Cliente cliente, Lezione lezione) {
         this.idPrenotazione = idPrenotazione;
         this.dataPren = dataPren;

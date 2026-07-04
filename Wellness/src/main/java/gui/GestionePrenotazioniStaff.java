@@ -37,7 +37,6 @@ public class GestionePrenotazioniStaff {
             frame.dispose();
         });
 
-        // Azione per il bottone Aggiorna: ricarica semplicemente la tabella
         btnAggiorna.addActionListener(e -> caricaTabella());
 
         btnCancella.addActionListener(e -> {
@@ -54,7 +53,7 @@ public class GestionePrenotazioniStaff {
                 boolean successo = controller.annullaPrenotazioneCliente(idPrenotazione);
                 if (successo) {
                     JOptionPane.showMessageDialog(mainPanel, "Prenotazione cancellata con successo!");
-                    caricaTabella(); // Ricarica la tabella dopo la cancellazione
+                    caricaTabella();
                 } else {
                     JOptionPane.showMessageDialog(mainPanel, "Errore durante la cancellazione nel database.", "Errore", JOptionPane.ERROR_MESSAGE);
                 }

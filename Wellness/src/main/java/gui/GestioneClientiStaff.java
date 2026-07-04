@@ -74,7 +74,7 @@ public class GestioneClientiStaff {
 
             if (controller.aggiungiClienteTramiteStaff(nuovo)) {
                 JOptionPane.showMessageDialog(mainPanel, "Cliente registrato! Procediamo con l'abbonamento.");
-                gestisciAbbonamento(nuovo); // Richiama la funzione automatica
+                gestisciAbbonamento(nuovo);
                 aggiornaTabella();
             } else {
                 JOptionPane.showMessageDialog(mainPanel, "Errore inserimento. Controlla se il CF esiste già.");
@@ -105,7 +105,7 @@ public class GestioneClientiStaff {
             if (controller.modificaClienteTramiteStaff(modificato)) {
                 int risposta = JOptionPane.showConfirmDialog(mainPanel, "Dati aggiornati. Vuoi assegnare o rinnovare l'abbonamento?", "Rinnovo", JOptionPane.YES_NO_OPTION);
                 if (risposta == JOptionPane.YES_OPTION) {
-                    gestisciAbbonamento(modificato); // Richiama la funzione automatica
+                    gestisciAbbonamento(modificato);
                 }
                 aggiornaTabella();
             }
@@ -113,7 +113,6 @@ public class GestioneClientiStaff {
 
         frame = new JFrame("Wellness In Cloud - Gestione Clienti");
 
-        // Se preferisci togliere la forzatura del layout, elimina le 3 righe seguenti
         mainPanel.setLayout(new BorderLayout());
         if(scrollPane != null) mainPanel.add(scrollPane, BorderLayout.CENTER);
         if(panelBottoni != null) mainPanel.add(panelBottoni, BorderLayout.SOUTH);

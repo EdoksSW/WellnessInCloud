@@ -40,7 +40,6 @@ public class VerificaCertificati {
 
         btnAggiornaVista.addActionListener(e -> aggiornaTabella());
 
-        // Modifica / Rinnovo della data di scadenza del certificato medico
         btnModificaScadenza.addActionListener(e -> {
             int riga = tabellaCertificati.getSelectedRow();
             if (riga == -1) {

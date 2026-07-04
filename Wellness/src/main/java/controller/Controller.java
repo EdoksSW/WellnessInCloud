@@ -211,7 +211,7 @@ public class Controller
         return utenti;
     }
 
-    //Controller Cliente--->
+
     public boolean effettuaIscrizioneCliente(Cliente cliente, TitoloIngresso titoloIngresso, int mesiDurata)
     {
         LocalDate dataInizio=LocalDate.now();

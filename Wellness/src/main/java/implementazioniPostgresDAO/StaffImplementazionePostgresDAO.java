@@ -28,7 +28,6 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
     public ArrayList<Staff> getAllStaff() {
         ArrayList<Staff> daRestituire = new ArrayList<>();
 
-        // MODIFICA: Aggiunto INNER JOIN con la tabella utente per recuperare i dati anagrafici
         String query = "SELECT u.codice_fiscale, u.nome, u.cognome, u.email, u.telefono, u.password, u.datanascita, u.eta, s.qualifica, s.iban, s.ruolo " +
                 "FROM utente u " +
                 "INNER JOIN staff s ON u.codice_fiscale = s.codice_fiscale " +
@@ -49,7 +48,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                         rs.getString("password"),
                         dataNascita,
                         eta,
-                        "", 0, "", "", // Tappi
+                        "", 0, "", "",
                         rs.getString("qualifica"),
                         rs.getString("iban"),
                         RuoloStaff.valueOf(rs.getString("ruolo"))
@@ -88,7 +87,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                         rs.getString("password"),
                         dataNascita,
                         eta,
-                        "", 0, "", "", // Tappi
+                        "", 0, "", "",
                         rs.getString("qualifica"),
                         rs.getString("iban"),
                         RuoloStaff.valueOf(rs.getString("ruolo"))
@@ -220,7 +219,7 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                         rs.getString("cognome"),
                         rs.getString("email"),
                         rs.getString("telefono"),
-                        "", null, 0, "", 0, "", "", // Tappi per i parametri vuoti
+                        "", null, 0, "", 0, "", "",
                         statoAccount
                 );
                 daRestituire.add(c);
@@ -234,7 +233,6 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
 
     @Override
     public boolean aggiungiClienteDaStaff(model.utenti.Cliente cliente) {
-        // MODIFICA: Logica a due tabelle con transazione per evitare salvataggi a metà
         String insertUtente = "INSERT INTO utente (codice_fiscale, nome, cognome, email, telefono, password, datanascita, eta, via, civico, cap, carta_fedelta) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         String insertCliente = "INSERT INTO cliente (codice_fiscale, stato_account) VALUES (?, ?);";
 
@@ -437,7 +435,6 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                 java.time.LocalTime ora = rs.getTime("ora_pren").toLocalTime();
                 model.enums.StatoPrenotazione stato = model.enums.StatoPrenotazione.fromLabel(rs.getString("stato_prenotazione"));
 
-                // Creiamo un cliente "tappo" per memorizzare il codice fiscale da mostrare in tabella
                 String cfCliente = rs.getString("cf_cliente");
                 model.utenti.Cliente c = new model.utenti.Cliente(cfCliente, "", "", "", "", "", null, 0, "", 0, "", "", model.enums.StatoAccount.ATTIVO);
 

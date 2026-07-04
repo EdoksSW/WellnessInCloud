@@ -13,6 +13,7 @@ public class GestionePrenotazioniStaff {
     private JTable tablePrenotazioni;
     private JButton btnCancella;
     private JButton btnIndietro;
+    private JButton btnAggiorna; // Il nuovo bottone
     private DefaultTableModel modelloTabella;
     public JFrame frame;
     private JFrame frameChiamante;
@@ -22,7 +23,6 @@ public class GestionePrenotazioniStaff {
         this.controller = controller;
         this.frameChiamante = frameChiamante;
 
-        // Aggiunta la colonna Cliente (CF)
         String[] colonne = {"ID", "Cliente (CF)", "Data", "Ora", "Corso/Lezione", "Stato"};
         modelloTabella = new DefaultTableModel(colonne, 0) {
             @Override
@@ -36,6 +36,9 @@ public class GestionePrenotazioniStaff {
             frameChiamante.setVisible(true);
             frame.dispose();
         });
+
+        // Azione per il bottone Aggiorna: ricarica semplicemente la tabella
+        btnAggiorna.addActionListener(e -> caricaTabella());
 
         btnCancella.addActionListener(e -> {
             int rigaSelezionata = tablePrenotazioni.getSelectedRow();
@@ -51,7 +54,7 @@ public class GestionePrenotazioniStaff {
                 boolean successo = controller.annullaPrenotazioneCliente(idPrenotazione);
                 if (successo) {
                     JOptionPane.showMessageDialog(mainPanel, "Prenotazione cancellata con successo!");
-                    caricaTabella(); // Ricarica la tabella globale
+                    caricaTabella(); // Ricarica la tabella dopo la cancellazione
                 } else {
                     JOptionPane.showMessageDialog(mainPanel, "Errore durante la cancellazione nel database.", "Errore", JOptionPane.ERROR_MESSAGE);
                 }
@@ -63,6 +66,7 @@ public class GestionePrenotazioniStaff {
         mainPanel.add(new JScrollPane(tablePrenotazioni), BorderLayout.CENTER);
 
         JPanel panelBottoni = new JPanel();
+        panelBottoni.add(btnAggiorna); // Aggiunto al pannello
         panelBottoni.add(btnCancella);
         panelBottoni.add(btnIndietro);
         mainPanel.add(panelBottoni, BorderLayout.SOUTH);

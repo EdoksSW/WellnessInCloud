@@ -227,7 +227,7 @@ public class Controller
         LocalDate dataPren=LocalDate.now();
         LocalTime oraPren=LocalTime.now();
 
-        Prenotazione prenotazione=new Prenotazione(dataPren, oraPren, statoPrenotazione, cliente, lezione);
+        Prenotazione prenotazione=new Prenotazione(0, dataPren, oraPren, statoPrenotazione, cliente, lezione);
         ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
         return clienteDAO.prenotaLezione(prenotazione);
     }
@@ -306,6 +306,16 @@ public class Controller
     public boolean aggiornaScadenzaCertificatoStaff(String cf, LocalDate nuovaScadenza) {
         StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
         return staffDAO.aggiornaCertificatoDaStaff(cf, nuovaScadenza);
+    }
+
+    public String[] getDettagliAbbonamentoCliente(String cf) {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.getDettagliAbbonamento(cf);
+    }
+
+    public java.util.List<Prenotazione> ottieniTuttePrenotazioniStaff() {
+        StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+        return staffDAO.ottieniTuttePrenotazioni();
     }
 }
 

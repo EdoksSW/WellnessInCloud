@@ -1,10 +1,12 @@
 package dao;
 
+import model.logistica.Prenotazione;
 import model.utenti.Cliente;
 import model.utenti.Staff;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 public interface StaffDAO {
     ArrayList<Staff> getAllStaff();
@@ -28,4 +30,8 @@ public interface StaffDAO {
     LocalDate getCertificatoDaStaff(String codiceFiscale);
 
     boolean aggiornaCertificatoDaStaff(String codiceFiscale, LocalDate nuovaScadenza);
+
+    String[] getDettagliAbbonamento(String codiceFiscale);
+
+    List<Prenotazione> ottieniTuttePrenotazioni();
 }

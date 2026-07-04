@@ -7,7 +7,7 @@
     <properties/>
     <border type="none"/>
     <children>
-      <scrollpane id="c0d81">
+      <scrollpane id="c0d81" binding="scrollPane">
         <constraints border-constraint="Center"/>
         <properties/>
         <border type="none"/>
@@ -18,7 +18,7 @@
           </component>
         </children>
       </scrollpane>
-      <grid id="56d4c" layout-manager="GridBagLayout">
+      <grid id="56d4c" binding="panelBottoni" layout-manager="GridBagLayout">
         <constraints border-constraint="South"/>
         <properties/>
         <border type="none"/>

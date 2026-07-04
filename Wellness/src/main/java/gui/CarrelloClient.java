@@ -84,18 +84,29 @@ public class CarrelloClient {
         txtAcquista.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                boolean successo=controller.finalizzaAcquisto(clienteLoggato);
+                // Recuperiamo il modello attuale dierramente dalla tabellaCarrello per poi verificare se ha 0 righe
+                DefaultTableModel defaultTableModel1= (DefaultTableModel) tabellaCarrello.getModel();
 
-                if(successo)
+                if(defaultTableModel1.getRowCount() == 0)
                 {
-                    JOptionPane.showMessageDialog(frame,"Acquisto effettuato con successo!","Successo", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(frame,"Il tuo carrello è vuoto! Aggiungi dei prodotti prima di acquistare."+ "Attenzione"+ JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                String cf = clienteLoggato.getCodiceFiscale();
+                int risposta=JOptionPane.showConfirmDialog(frame,"Vuoi procedere con l'acquisto?","Conferma l'ordine",JOptionPane.YES_NO_OPTION);
+                if(risposta == JOptionPane.YES_OPTION)
+                {
+                    if(controller.finalizzaAcquisto(cf,carrello))
+                    {
+                        JOptionPane.showMessageDialog(frame, "Acquisto effettuato con successo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
 
-                    //Riapriamo la finesta precedenta (la Home) e chiudiamo quella del carrello
-                    frameChiamante.setVisible(true);
-                    frame.dispose();
-                }else
-                {
-                    JOptionPane.showMessageDialog(frame,"Errore durante l'acquisto. Riprovare", "Errore",JOptionPane.ERROR_MESSAGE);
+                        new ShopClient(controller, clienteLoggato, null);
+
+                        frame.dispose();
+                    }else
+                    {
+                        JOptionPane.showMessageDialog(frame, "Errore durante l'acquisto. Controlla la disponibilità dei prodotti.", "Errore", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             }
         });

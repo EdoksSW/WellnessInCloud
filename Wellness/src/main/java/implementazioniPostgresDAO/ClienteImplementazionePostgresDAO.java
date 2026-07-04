@@ -136,72 +136,99 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
         return carrello;
     }
 
-    @Override
+   @Override
     public boolean agiornaCarrello(String codiceFiscaleCliente, Carrello carrello)
     {
-        // Aggiorna il totale nella tabella del carrello
-        String queryCarrello="UPDATE carrello SET totale=? WHERE id_carrello=?;";
+        // 1. Definizioni delle Query della Transazione
+        String queryCarrello = "UPDATE carrello SET totale=? WHERE id_carrello=?;";
+        String queryCancellaDettagli = "DELETE FROM dettaglio_carrello WHERE id_carrello=?;";
+        String queryInserisciDettaglio = "INSERT INTO dettaglio_carrello (id_carrello, id_prodotto, quantita) VALUES(?,?,?);";
 
-        // Cancella i vecchi dettagli
-        String queryCancellaDettagli="DELETE FROM dettaglio_carrello WHERE id_carrello=?;";
-
-        // Inserisce i nuovi dettagli aggionrati
-        String queryInserisciDettaglio="INSERT INTO dettaglio_carrello (id_carrello, id_prodotto, quantita) VALUES(?,?,?);";
+        // [Passaggio Fondamentale]: Query algebrica per sottrarre la quantità acquistata dalla giacenza attuale
+        String queryScaliGiacenza = "UPDATE prodotto SET giacenza = giacenza - ? WHERE id_prodotto = ?;";
 
         try
         {
-            //Disabilito il commit automantico per una transazione sicura
+            // Disabilito il commit automatico per garantire l'atomicità (proprietà ACID)
             this.connection.setAutoCommit(false);
 
             //Aggiornamento totale del carrello
-            try(PreparedStatement psCarrello=this.connection.prepareStatement(queryCarrello))
+            try(PreparedStatement psCarrello = this.connection.prepareStatement(queryCarrello))
             {
-                psCarrello.setBigDecimal(1,carrello.getTotale());
+                psCarrello.setBigDecimal(1, carrello.getTotale());
                 psCarrello.setInt(2, carrello.getId_carrello());
                 psCarrello.executeUpdate();
             }
 
             //Cancelliamo i vecchi dettagli di questo carrello
-            try(PreparedStatement psCancella=this.connection.prepareStatement(queryCancellaDettagli))
+            try(PreparedStatement psCancella = this.connection.prepareStatement(queryCancellaDettagli))
             {
-                psCancella.setInt(1,carrello.getId_carrello());
+                psCancella.setInt(1, carrello.getId_carrello());
                 psCancella.executeUpdate();
             }
 
-            // Reinseriamo i prdototti correnti con le loro nuove quantità
-            try(PreparedStatement psInserisci=this.connection.prepareStatement(queryInserisciDettaglio))
+            //Reinseriamo i prodotti correnti e scaliama le giacenze in mutua esclusione
+            try(PreparedStatement psInserisci = this.connection.prepareStatement(queryInserisciDettaglio);
+                PreparedStatement psGiacenza = this.connection.prepareStatement(queryScaliGiacenza)) // Secondo statement per il magazzino
             {
-                //Ciclo la mappa dei prodotti (o la lista insomma) per prendere ogni elemento
+                // Ciclo la mappa dei prodotti per prendere ogni elemento
                 for(Prodotto prodotto: carrello.getMapCarrellol().keySet())
                 {
-                    int quantita=carrello.getMapCarrellol().get(prodotto);
+                    int quantita = carrello.getMapCarrellol().get(prodotto);
+
+                    // Configurazione legame dettaglio_carrello
                     psInserisci.setInt(1, carrello.getId_carrello());
                     psInserisci.setInt(2, prodotto.getId_prodotto());
                     psInserisci.setInt(3, quantita);
-
-                    //Acculimuliamo il comando dentro al Batch così da eseguire tutto insieme dopo
                     psInserisci.addBatch();
+
+                    // Configurazione legame riduzione magazzino: [Nuova_Giacenza = Vecchia_Giacenza - Quantita]
+                    psGiacenza.setInt(1, quantita);
+                    psGiacenza.setInt(2, prodotto.getId_prodotto());
+                    psGiacenza.addBatch();
                 }
-                //Esegue tutti gli inserimenti insieme
+
+                // Esecuzione cumulativa dei Batch sul Database
                 psInserisci.executeBatch();
+                psGiacenza.executeBatch();
             }
 
-            //Se tutto è andato a buon fin, salviamo definitivamente sul DB
-            this.connection.commit(); //Rende definitive tutte le modifiche
-            this.connection.setAutoCommit(true); //Da adesso in poi tutto verrà modificato in runtime
+            // Se l'intero blocco ha avuto successo, salviamo definitivamente sul DB
+            this.connection.commit();
+            this.connection.setAutoCommit(true);
             return true;
-        }catch(SQLException e)
-        {
-            //In caso di errore, annulliamo tutto per non lasciare il carrello a metà
+
+        } catch(SQLException e) {
+            // In caso di eccezione o fallimento, annulliamo tutto (Rollback algebrico)
             try
             {
                 this.connection.rollback();
                 this.connection.setAutoCommit(true);
-            }catch(SQLException ex)
-            {
+            } catch(SQLException ex) {
                 ex.printStackTrace();
             }
-            System.out.println("Errore durante l'aggiornamento del carrello-> " + e.getMessage());
+            System.out.println("Errore durante l'aggiornamento e scarico giacenza del carrello -> " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean aggiungiSingoloProdotto(String cfCliente, int idProdotto, int quantita) {
+        // Inserisce nel dettaglio carrello trovando l'id_carrello associato al codice fiscale del cliente
+        String query = "INSERT INTO dettaglio_carrello (id_carrello, id_prodotto, quantita) " +
+                "VALUES ((SELECT id_carrello FROM carrello WHERE cf_cliente = ?), ?, ?) " +
+                "ON CONFLICT (id_carrello, id_prodotto) " +
+                "DO UPDATE SET quantita = dettaglio_carrello.quantita + EXCLUDED.quantita;";
+
+        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
+            ps.setString(1, cfCliente);
+            ps.setInt(2, idProdotto);
+            ps.setInt(3, quantita);
+
+            ps.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("Errore inserimento con gestione duplicati: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -417,7 +444,8 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     public boolean completaAcquisto(Cliente cliente) {
         // Definizione delle query SQL basate sulle tabelle del nostro schema logico[cite: 1]
         String queryInfoCarrello = "SELECT id_carrello, totale FROM carrello WHERE cf_cliente = ?";
-        String queryInserisciOrdine = "INSERT INTO ordine (data_ordine, totale, stato, cf_cliente) VALUES (CURRENT_DATE, ?, 'in\nelaborazione', ?) RETURNING id_ordine";
+        String queryInserisciOrdine = "INSERT INTO ordine (data_ordine, totale, stato, cf_cliente) VALUES (CURRENT_DATE, ?, 'in " +
+                "elaborazione', ?) RETURNING id_ordine";
         String querySpostaDettagli = "INSERT INTO ordine_dettaglio (id_ordine, id_prodotto, quantita) " +
                 "SELECT ?, id_prodotto, quantita FROM dettaglio_carrello WHERE id_carrello = ?";
         String querySvuotaCarrello = "DELETE FROM dettaglio_carrello WHERE id_carrello = ?";
@@ -484,5 +512,29 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
             e.printStackTrace();
             return false;
         }
+    }
+
+    public List<Prodotto> ottieniCatalogoProdotti()
+    {
+        List<Prodotto> prodotti = new ArrayList<>();
+        String query="SELECT p.id_prodotto, p.nome, p.prezzo, p.giacenza, c.nome AS nome_categoria, c.id_categoria " +
+                "FROM prodotto p JOIN categoria c ON p.id_categoria = c.id_categoria " +
+                "WHERE p.giacenza > 0";
+
+        try(PreparedStatement preparedStatement=this.connection.prepareStatement(query);
+            ResultSet resultSet=preparedStatement.executeQuery();)
+        {
+            while(resultSet.next())
+            {
+                Categoria cat=new Categoria(resultSet.getInt("id_categoria"),resultSet.getString("nome_categoria"));
+                Prodotto p=new Prodotto(resultSet.getInt("id_prodotto"), resultSet.getString("nome"),resultSet.getBigDecimal("prezzo"),resultSet.getInt("giacenza"),cat);
+                prodotti.add(p);
+            }
+        }catch(SQLException e)
+        {
+            System.out.println("Errore nella funzione ottieniCatalogoProdotti\nin ClienteImplementazionePostgresDAO.java"+ e.getMessage());
+            e.printStackTrace();
+        }
+        return prodotti;
     }
 }

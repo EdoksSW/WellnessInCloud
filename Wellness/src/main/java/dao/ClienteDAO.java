@@ -1,9 +1,6 @@
 package dao;
 
-import model.commerce.Carrello;
-import model.commerce.Iscrizione;
-import model.commerce.Ordine;
-import model.commerce.OrdineDettaglio;
+import model.commerce.*;
 import model.logistica.Prenotazione;
 import model.utenti.Cliente;
 
@@ -38,4 +35,6 @@ public interface ClienteDAO
     List<OrdineDettaglio> ottieniDettagliOrdine(int idOrdine);
 
     boolean completaAcquisto(Cliente cliente);
+
+    List<Prodotto> ottieniCatalogoProdotti();
 }

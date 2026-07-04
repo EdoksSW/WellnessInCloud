@@ -12,4 +12,6 @@ public interface CategoriaDAO {
     boolean modificaCategoria(int idCategoria, String nome);
 
     boolean rimuoviCategoria(int idCategoria);
+
+
 }

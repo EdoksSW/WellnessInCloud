@@ -371,11 +371,6 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
         String queryInserisciOrdine = "INSERT INTO ordine (data_ordine, totale, stato, cf_cliente) VALUES (CURRENT_DATE, ?, 'in elaborazione', ?) RETURNING id_ordine";
         String querySpostaDettagli = "INSERT INTO ordine_dettaglio (id_ordine, id_prodotto, quantita) SELECT ?, id_prodotto, quantita FROM dettaglio_carrello WHERE id_carrello = ?";
 
-        // [Passaggio Fondamentale]: Query algebrica per scalare le giacenze dei prodotti acquistati nel carrello
-        String queryAggiornaGiacenze = "UPDATE prodotto SET giacenza = giacenza - dc.quantita " +
-                "FROM dettaglio_carrello dc " +
-                "WHERE prodotto.id_prodotto = dc.id_prodotto AND dc.id_carrello = ?";
-
         String querySvuotaCarrello = "DELETE FROM dettaglio_carrello WHERE id_carrello = ?";
 
         try {
@@ -420,12 +415,6 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
                 psDettaglio.setInt(1, idNuovoOrdine);
                 psDettaglio.setInt(2, idCarrello);
                 psDettaglio.executeUpdate();
-            }
-
-            // Riduciamo il magazzino in base alle quantità acquistate
-            try (PreparedStatement psGiacenze = this.connection.prepareStatement(queryAggiornaGiacenze)) {
-                psGiacenze.setInt(1, idCarrello);
-                psGiacenze.executeUpdate();
             }
 
             // Svuotamento del carrello del cliente tramite la cancellazione dei suoi dettagli
@@ -481,33 +470,11 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
 
     @Override
     public boolean annullaOrdineInElaborazione(int idOrdine) {
-        // Query per recuperare i prodotti e le quantità dell'ordine
-        String queryDettagli = "SELECT id_prodotto, quantita FROM ordine_dettaglio WHERE id_ordine = ?;";
-
-        // Query algebrica per rimettere i prodotti in magazzino
-        String queryRipristinaGiacenza = "UPDATE prodotto SET giacenza = giacenza + ? WHERE id_prodotto = ?;";
-
-        // Query di eliminazione
         String queryCancellaDettagli = "DELETE FROM ordine_dettaglio WHERE id_ordine = ?;";
         String queryCancellaOrdine = "DELETE FROM ordine WHERE id_ordine = ?;";
 
         try {
             this.connection.setAutoCommit(false);
-
-            // Recuperiamo i dettagli dei prodotti per aggiornare il magazzino
-            try (PreparedStatement psDettagli = this.connection.prepareStatement(queryDettagli)) {
-                psDettagli.setInt(1, idOrdine);
-                try (ResultSet rs = psDettagli.executeQuery()) {
-                    try (PreparedStatement psGiacenza = this.connection.prepareStatement(queryRipristinaGiacenza)) {
-                        while (rs.next()) {
-                            psGiacenza.setInt(1, rs.getInt("quantita"));
-                            psGiacenza.setInt(2, rs.getInt("id_prodotto"));
-                            psGiacenza.addBatch();
-                        }
-                        psGiacenza.executeBatch();
-                    }
-                }
-            }
 
             // Cancelliamo i dettagli dell'ordine
             try (PreparedStatement psDelDettagli = this.connection.prepareStatement(queryCancellaDettagli)) {

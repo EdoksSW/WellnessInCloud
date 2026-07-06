@@ -77,34 +77,37 @@ public class CarrelloClient {
         txtHome.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frameChiamante.setVisible(true);
+                new HomeClient(controller, clienteLoggato, frameChiamante);
                 frame.dispose();
             }
         });
         txtAcquista.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Recuperiamo il modello attuale dierramente dalla tabellaCarrello per poi verificare se ha 0 righe
-                DefaultTableModel defaultTableModel1= (DefaultTableModel) tabellaCarrello.getModel();
+                // Recuperiamo il modello attuale direttamente dalla tabellaCarrello per poi verificare se ha 0 righe
+                DefaultTableModel defaultTableModel1 = (DefaultTableModel) tabellaCarrello.getModel();
 
                 if(defaultTableModel1.getRowCount() == 0)
                 {
-                    JOptionPane.showMessageDialog(frame,"Il tuo carrello è vuoto! Aggiungi dei prodotti prima di acquistare."+ "Attenzione"+ JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Il tuo carrello è vuoto! Aggiungi dei prodotti prima di acquistare.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                String cf = clienteLoggato.getCodiceFiscale();
-                int risposta=JOptionPane.showConfirmDialog(frame,"Vuoi procedere con l'acquisto?","Conferma l'ordine",JOptionPane.YES_NO_OPTION);
+
+                int risposta = JOptionPane.showConfirmDialog(frame, "Vuoi procedere con l'acquisto?", "Conferma l'ordine", JOptionPane.YES_NO_OPTION);
                 if(risposta == JOptionPane.YES_OPTION)
                 {
-                    if(controller.finalizzaAcquisto(cf,carrello))
+                    // [Passaggio Logico Allineato]: Invochiamo il controller passando l'oggetto clienteLoggato intero
+                    if(controller.finalizzaAcquisto(clienteLoggato))
                     {
                         JOptionPane.showMessageDialog(frame, "Acquisto effettuato con successo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
 
+                        // Apriamo una nuova istanza pulita dello ShopClient
+                        // Il suo costruttore eseguirà la query e mostrerà le giacenze ridotte del database (es. 55)
                         new ShopClient(controller, clienteLoggato, null);
 
+                        // Chiudiamo definitivamente la finestra attuale del carrello
                         frame.dispose();
-                    }else
-                    {
+                    } else {
                         JOptionPane.showMessageDialog(frame, "Errore durante l'acquisto. Controlla la disponibilità dei prodotti.", "Errore", JOptionPane.ERROR_MESSAGE);
                     }
                 }

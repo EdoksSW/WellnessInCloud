@@ -1,6 +1,8 @@
 package dao;
 
 import model.commerce.*;
+import model.enums.StatoPrenotazione;
+import model.logistica.Lezione;
 import model.logistica.Prenotazione;
 import model.utenti.Cliente;
 
@@ -13,9 +15,6 @@ public interface ClienteDAO
 
     //Recupero l'entità Carrello associata al cliente per visualizzare i prodotti salvati.
     Carrello ottieniCarrello(Cliente cliente);
-
-    //Aggiorno il carrello nel DB
-    boolean agiornaCarrello(String codiceFiscaleCliente, Carrello carrello);
 
     //RELAZIONE: CLIENTE - ABBONAMENTO / ISCRIZIONE
     //Associo un Cliente ad un Abbonamento
@@ -37,4 +36,8 @@ public interface ClienteDAO
     boolean completaAcquisto(Cliente cliente);
 
     List<Prodotto> ottieniCatalogoProdotti();
+
+    public boolean aggiungiSingoloProdotto(String cfCliente, int idProdotto, int quantita);
+
+    public boolean annullaOrdineInElaborazione(int idOrdine);
 }

@@ -76,6 +76,15 @@ public class HomeClient {
             }
         });
 
+
+        txtPrenotazioni.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                frame.setVisible(false);
+                new PrenotazioniClient(controller,clienteLoggato,frame);
+            }
+        });
+
         frame = new JFrame("Wellness In Cloud - Area Cliente");
         frame.setContentPane(panel1);
         frame.setSize(500, 380);

@@ -4,6 +4,7 @@ import model.logistica.Lezione;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public interface LezioneDAO {
     ArrayList<Lezione> getLezioniByCorso(int idCorso);
@@ -13,6 +14,8 @@ public interface LezioneDAO {
     boolean modificaLezione(int idLezione, String nome, String descrizione, String giorno, LocalTime oraInizio, LocalTime oraFine, int idSala);
 
     boolean rimuoviLezione(int idLezione);
+
+    public List<Lezione> getTutteLezioni();
 
     ArrayList<Integer> getSale();
 }

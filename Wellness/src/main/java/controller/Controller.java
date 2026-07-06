@@ -218,7 +218,7 @@ public class Controller
         LocalDate dataFine=dataInizio.plusMonths(mesiDurata);
         Iscrizione iscrizione=new Iscrizione(0, dataInizio, dataFine, cliente, titoloIngresso);
 
-        ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+        ClienteDAO clienteDAO=new ClienteImplementazionePostgresDAO();
         return clienteDAO.effettuaIscrizione(iscrizione);
     }
 
@@ -228,42 +228,47 @@ public class Controller
         LocalTime oraPren=LocalTime.now();
 
         Prenotazione prenotazione=new Prenotazione(0, dataPren, oraPren, statoPrenotazione, cliente, lezione);
-        ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+        ClienteDAO clienteDAO=new ClienteImplementazionePostgresDAO();
         return clienteDAO.prenotaLezione(prenotazione);
     }
 
     public boolean annullaPrenotazioneCliente(int id_prenotazione)
     {
-        ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+        ClienteDAO clienteDAO=new ClienteImplementazionePostgresDAO();
         return clienteDAO.annullaPrenotazione(id_prenotazione);
     }
 
     public List<Prenotazione> ottieniPrenotazioniAttiveCliente(Cliente cliente)
     {
-        ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+        ClienteDAO clienteDAO=new ClienteImplementazionePostgresDAO();
         return clienteDAO.ottieniPrenotazioniCliente(cliente);
     }
 
     public Carrello ottieniCarrelloCliente(Cliente cliente)
     {
-        ClienteImplementazionePostgresDAO clienteDAO= new ClienteImplementazionePostgresDAO();
+        ClienteDAO clienteDAO= new ClienteImplementazionePostgresDAO();
         return clienteDAO.ottieniCarrello(cliente);
     }
 
-    public boolean finalizzaAcquisto(String cfCliente, Carrello carrello)
+    public boolean annullaOrdineCliente(int idOrdine) {
+        ClienteDAO clienteDAO = new ClienteImplementazionePostgresDAO();
+        return clienteDAO.annullaOrdineInElaborazione(idOrdine);
+    }
+
+    public boolean finalizzaAcquisto(Cliente cliente)
     {
-        ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
-        return clienteDAO.agiornaCarrello(cfCliente, carrello);
+        ClienteDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+        return clienteDAO.completaAcquisto(cliente);
     }
 
     public List<Ordine> ottieniStoricoOrdiniCliente(Cliente cliente) {
-        ClienteImplementazionePostgresDAO clienteDAO = new ClienteImplementazionePostgresDAO();
+        ClienteDAO clienteDAO = new ClienteImplementazionePostgresDAO();
         return clienteDAO.ottieniStoricoOrdini(cliente);
     }
 
     public List<Prodotto> ottieniCatalogoProdotto()
     {
-        ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+        ClienteDAO clienteDAO=new ClienteImplementazionePostgresDAO();
         return clienteDAO.ottieniCatalogoProdotti();
     }
 
@@ -274,7 +279,7 @@ public class Controller
 
     public boolean aggiungiProdottoCarrello(Cliente cliente, int idProdotto, int quatita)
     {
-        ClienteImplementazionePostgresDAO clienteDAO=new ClienteImplementazionePostgresDAO();
+        ClienteDAO clienteDAO=new ClienteImplementazionePostgresDAO();
         String cfCliente=cliente.getCodiceFiscale();
         return clienteDAO.aggiungiSingoloProdotto(cfCliente, idProdotto,quatita);
     }
@@ -317,6 +322,12 @@ public class Controller
         StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
         return staffDAO.ottieniTuttePrenotazioni();
     }
+
+    public List<Lezione> ottieniListaLezioni() {
+        LezioneDAO lezioneDAO = new LezioneImplementazionePostgresDAO();
+        return lezioneDAO.getTutteLezioni();
+    }
+
 }
 
 

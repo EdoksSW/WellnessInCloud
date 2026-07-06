@@ -137,82 +137,6 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     }
 
    @Override
-    public boolean agiornaCarrello(String codiceFiscaleCliente, Carrello carrello)
-    {
-        // 1. Definizioni delle Query della Transazione
-        String queryCarrello = "UPDATE carrello SET totale=? WHERE id_carrello=?;";
-        String queryCancellaDettagli = "DELETE FROM dettaglio_carrello WHERE id_carrello=?;";
-        String queryInserisciDettaglio = "INSERT INTO dettaglio_carrello (id_carrello, id_prodotto, quantita) VALUES(?,?,?);";
-
-        // [Passaggio Fondamentale]: Query algebrica per sottrarre la quantità acquistata dalla giacenza attuale
-        String queryScaliGiacenza = "UPDATE prodotto SET giacenza = giacenza - ? WHERE id_prodotto = ?;";
-
-        try
-        {
-            // Disabilito il commit automatico per garantire l'atomicità (proprietà ACID)
-            this.connection.setAutoCommit(false);
-
-            //Aggiornamento totale del carrello
-            try(PreparedStatement psCarrello = this.connection.prepareStatement(queryCarrello))
-            {
-                psCarrello.setBigDecimal(1, carrello.getTotale());
-                psCarrello.setInt(2, carrello.getId_carrello());
-                psCarrello.executeUpdate();
-            }
-
-            //Cancelliamo i vecchi dettagli di questo carrello
-            try(PreparedStatement psCancella = this.connection.prepareStatement(queryCancellaDettagli))
-            {
-                psCancella.setInt(1, carrello.getId_carrello());
-                psCancella.executeUpdate();
-            }
-
-            //Reinseriamo i prodotti correnti e scaliama le giacenze in mutua esclusione
-            try(PreparedStatement psInserisci = this.connection.prepareStatement(queryInserisciDettaglio);
-                PreparedStatement psGiacenza = this.connection.prepareStatement(queryScaliGiacenza)) // Secondo statement per il magazzino
-            {
-                // Ciclo la mappa dei prodotti per prendere ogni elemento
-                for(Prodotto prodotto: carrello.getMapCarrellol().keySet())
-                {
-                    int quantita = carrello.getMapCarrellol().get(prodotto);
-
-                    // Configurazione legame dettaglio_carrello
-                    psInserisci.setInt(1, carrello.getId_carrello());
-                    psInserisci.setInt(2, prodotto.getId_prodotto());
-                    psInserisci.setInt(3, quantita);
-                    psInserisci.addBatch();
-
-                    // Configurazione legame riduzione magazzino: [Nuova_Giacenza = Vecchia_Giacenza - Quantita]
-                    psGiacenza.setInt(1, quantita);
-                    psGiacenza.setInt(2, prodotto.getId_prodotto());
-                    psGiacenza.addBatch();
-                }
-
-                // Esecuzione cumulativa dei Batch sul Database
-                psInserisci.executeBatch();
-                psGiacenza.executeBatch();
-            }
-
-            // Se l'intero blocco ha avuto successo, salviamo definitivamente sul DB
-            this.connection.commit();
-            this.connection.setAutoCommit(true);
-            return true;
-
-        } catch(SQLException e) {
-            // In caso di eccezione o fallimento, annulliamo tutto (Rollback algebrico)
-            try
-            {
-                this.connection.rollback();
-                this.connection.setAutoCommit(true);
-            } catch(SQLException ex) {
-                ex.printStackTrace();
-            }
-            System.out.println("Errore durante l'aggiornamento e scarico giacenza del carrello -> " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public boolean aggiungiSingoloProdotto(String cfCliente, int idProdotto, int quantita) {
         // Inserisce nel dettaglio carrello trovando l'id_carrello associato al codice fiscale del cliente
         String query = "INSERT INTO dettaglio_carrello (id_carrello, id_prodotto, quantita) " +
@@ -442,73 +366,90 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
     }
 
     public boolean completaAcquisto(Cliente cliente) {
-        // Definizione delle query SQL basate sulle tabelle del nostro schema logico[cite: 1]
+        // Definizioni delle query SQL basate sullo schema logico
         String queryInfoCarrello = "SELECT id_carrello, totale FROM carrello WHERE cf_cliente = ?";
-        String queryInserisciOrdine = "INSERT INTO ordine (data_ordine, totale, stato, cf_cliente) VALUES (CURRENT_DATE, ?, 'in " +
-                "elaborazione', ?) RETURNING id_ordine";
-        String querySpostaDettagli = "INSERT INTO ordine_dettaglio (id_ordine, id_prodotto, quantita) " +
-                "SELECT ?, id_prodotto, quantita FROM dettaglio_carrello WHERE id_carrello = ?";
+        String queryInserisciOrdine = "INSERT INTO ordine (data_ordine, totale, stato, cf_cliente) VALUES (CURRENT_DATE, ?, 'in elaborazione', ?) RETURNING id_ordine";
+        String querySpostaDettagli = "INSERT INTO ordine_dettaglio (id_ordine, id_prodotto, quantita) SELECT ?, id_prodotto, quantita FROM dettaglio_carrello WHERE id_carrello = ?";
+
+        // [Passaggio Fondamentale]: Query algebrica per scalare le giacenze dei prodotti acquistati nel carrello
+        String queryAggiornaGiacenze = "UPDATE prodotto SET giacenza = giacenza - dc.quantita " +
+                "FROM dettaglio_carrello dc " +
+                "WHERE prodotto.id_prodotto = dc.id_prodotto AND dc.id_carrello = ?";
+
         String querySvuotaCarrello = "DELETE FROM dettaglio_carrello WHERE id_carrello = ?";
 
         try {
-            // Disattiviamo l'autocommit per raggruppare tutte le operazioni in una transazione sicura
+            // Disattiviamo l'autocommit per raggruppare le operazioni in una transazione sicura (Proprietà ACID)
             this.connection.setAutoCommit(false);
 
-            // Inizializzazione delle variabili per memorizzare i dati del carrello da recuperare[cite: 1]
             int idCarrello = -1;
             double totaleCarrello = 0.0;
 
-            // Esecuzione della prima query per cercare l'ID e il totale del carrello del cliente[cite: 1]
-            PreparedStatement psInfo = this.connection.prepareStatement(queryInfoCarrello);
-            psInfo.setString(1, cliente.getCodiceFiscale());
-            ResultSet rsInfo = psInfo.executeQuery();
-            if (rsInfo.next()) {
-                idCarrello = rsInfo.getInt("id_carrello");
-                totaleCarrello = rsInfo.getDouble("totale");
+            // Esecuzione della prima query per cercare l'ID e il totale del carrello del cliente
+            try (PreparedStatement psInfo = this.connection.prepareStatement(queryInfoCarrello)) {
+                psInfo.setString(1, cliente.getCodiceFiscale());
+                try (ResultSet rsInfo = psInfo.executeQuery()) {
+                    if (rsInfo.next()) {
+                        idCarrello = rsInfo.getInt("id_carrello");
+                        totaleCarrello = rsInfo.getDouble("totale");
+                    }
+                }
             }
 
             // Se il carrello non viene trovato nel database, interrompiamo l'operazione annullando tutto
             if (idCarrello == -1) {
                 this.connection.rollback();
+                this.connection.setAutoCommit(true);
                 return false;
             }
 
-            // Inserimento della testata del nuovo ordine con il totale della spesa[cite: 1]
-            PreparedStatement psOrdine = this.connection.prepareStatement(queryInserisciOrdine);
-            psOrdine.setDouble(1, totaleCarrello);
-            psOrdine.setString(2, cliente.getCodiceFiscale());
-            ResultSet rsOrdine = psOrdine.executeQuery();
-
-            // Recupero dell'ID dell'ordine appena generato automaticamente dal database
+            // Inserimento della testata del nuovo ordine con il totale della spesa
             int idNuovoOrdine = -1;
-            if (rsOrdine.next()) {
-                idNuovoOrdine = rsOrdine.getInt("id_ordine");
+            try (PreparedStatement psOrdine = this.connection.prepareStatement(queryInserisciOrdine)) {
+                psOrdine.setDouble(1, totaleCarrello);
+                psOrdine.setString(2, cliente.getCodiceFiscale());
+                try (ResultSet rsOrdine = psOrdine.executeQuery()) {
+                    if (rsOrdine.next()) {
+                        idNuovoOrdine = rsOrdine.getInt("id_ordine");
+                    }
+                }
             }
 
-            // Spostamento in blocco di tutti i prodotti dal vecchio carrello ai dettagli del nuovo ordine[cite: 1]
-            PreparedStatement psDettaglio = this.connection.prepareStatement(querySpostaDettagli);
-            psDettaglio.setInt(1, idNuovoOrdine);
-            psDettaglio.setInt(2, idCarrello);
-            psDettaglio.executeUpdate();
+            // Spostamento in blocco di tutti i prodotti dal vecchio carrello ai dettagli del nuovo ordine
+            try (PreparedStatement psDettaglio = this.connection.prepareStatement(querySpostaDettagli)) {
+                psDettaglio.setInt(1, idNuovoOrdine);
+                psDettaglio.setInt(2, idCarrello);
+                psDettaglio.executeUpdate();
+            }
 
-            // Svuotamento del carrello del cliente tramite la cancellazione dei suoi dettagli[cite: 1]
-            PreparedStatement psSvuota = this.connection.prepareStatement(querySvuotaCarrello);
-            psSvuota.setInt(1, idCarrello);
-            psSvuota.executeUpdate();
+            // Riduciamo il magazzino in base alle quantità acquistate
+            try (PreparedStatement psGiacenze = this.connection.prepareStatement(queryAggiornaGiacenze)) {
+                psGiacenze.setInt(1, idCarrello);
+                psGiacenze.executeUpdate();
+            }
+
+            // Svuotamento del carrello del cliente tramite la cancellazione dei suoi dettagli
+            try (PreparedStatement psSvuota = this.connection.prepareStatement(querySvuotaCarrello)) {
+                psSvuota.setInt(1, idCarrello);
+                psSvuota.executeUpdate();
+            }
 
             // Conferma definitiva e salvataggio di tutte le modifiche sul database
             this.connection.commit();
+            this.connection.setAutoCommit(true);
             return true;
 
         } catch (SQLException e) {
-            // In caso di errore SQL annulliamo ogni modifica effettuata per ripristinare i dati iniziali
+            // In caso di errore SQL annulliamo ogni modifica effettuata per ripristinare i dati iniziali (Rollback)
             try {
                 if (this.connection != null) {
                     this.connection.rollback();
+                    this.connection.setAutoCommit(true);
                 }
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }
+            System.out.println("Errore durante l'acquisto e lo scarico merci: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -536,5 +477,64 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
             e.printStackTrace();
         }
         return prodotti;
+    }
+
+    @Override
+    public boolean annullaOrdineInElaborazione(int idOrdine) {
+        // Query per recuperare i prodotti e le quantità dell'ordine
+        String queryDettagli = "SELECT id_prodotto, quantita FROM ordine_dettaglio WHERE id_ordine = ?;";
+
+        // Query algebrica per rimettere i prodotti in magazzino
+        String queryRipristinaGiacenza = "UPDATE prodotto SET giacenza = giacenza + ? WHERE id_prodotto = ?;";
+
+        // Query di eliminazione
+        String queryCancellaDettagli = "DELETE FROM ordine_dettaglio WHERE id_ordine = ?;";
+        String queryCancellaOrdine = "DELETE FROM ordine WHERE id_ordine = ?;";
+
+        try {
+            this.connection.setAutoCommit(false);
+
+            // Recuperiamo i dettagli dei prodotti per aggiornare il magazzino
+            try (PreparedStatement psDettagli = this.connection.prepareStatement(queryDettagli)) {
+                psDettagli.setInt(1, idOrdine);
+                try (ResultSet rs = psDettagli.executeQuery()) {
+                    try (PreparedStatement psGiacenza = this.connection.prepareStatement(queryRipristinaGiacenza)) {
+                        while (rs.next()) {
+                            psGiacenza.setInt(1, rs.getInt("quantita"));
+                            psGiacenza.setInt(2, rs.getInt("id_prodotto"));
+                            psGiacenza.addBatch();
+                        }
+                        psGiacenza.executeBatch();
+                    }
+                }
+            }
+
+            // Cancelliamo i dettagli dell'ordine
+            try (PreparedStatement psDelDettagli = this.connection.prepareStatement(queryCancellaDettagli)) {
+                psDelDettagli.setInt(1, idOrdine);
+                psDelDettagli.executeUpdate();
+            }
+
+            //Cancelliamo definitivamente la testata dell'ordine
+            try (PreparedStatement psDelOrdine = this.connection.prepareStatement(queryCancellaOrdine)) {
+                psDelOrdine.setInt(1, idOrdine);
+                psDelOrdine.executeUpdate();
+            }
+
+            this.connection.commit();
+            this.connection.setAutoCommit(true);
+            return true;
+
+        } catch (SQLException e) {
+            try {
+                this.connection.rollback();
+                this.connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            System.out.println("Errore nell'annullamento dell'ordine: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 }

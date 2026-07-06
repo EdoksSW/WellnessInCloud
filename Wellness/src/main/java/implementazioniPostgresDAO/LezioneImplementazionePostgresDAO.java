@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class LezioneImplementazionePostgresDAO implements LezioneDAO {
 
@@ -116,6 +117,36 @@ public class LezioneImplementazionePostgresDAO implements LezioneDAO {
             }
         } catch (SQLException e) {
             System.err.println("Errore durante la lettura delle sale: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return daRestituire;
+    }
+
+    @Override
+    public List<Lezione> getTutteLezioni() {
+        List<Lezione> daRestituire = new ArrayList<>();
+        String query = "SELECT id_lezione, nome, descrizione, giorno, ora_inizio, ora_fine, id_corso, id_sala FROM lezione ORDER BY giorno, ora_inizio;";
+
+        try (PreparedStatement ps = this.connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                LocalTime inizio = rs.getTime("ora_inizio") != null ? rs.getTime("ora_inizio").toLocalTime() : null;
+                LocalTime fine = rs.getTime("ora_fine") != null ? rs.getTime("ora_fine").toLocalTime() : null;
+
+                daRestituire.add(new Lezione(
+                        rs.getInt("id_lezione"),
+                        rs.getString("nome"),
+                        rs.getString("descrizione"),
+                        rs.getString("giorno"),
+                        inizio,
+                        fine,
+                        rs.getInt("id_sala"),
+                        rs.getInt("id_corso")
+                ));
+            }
+        } catch (SQLException e) {
+            System.err.println("Errore durante la lettura di tutte le lezioni: " + e.getMessage());
             e.printStackTrace();
         }
         return daRestituire;

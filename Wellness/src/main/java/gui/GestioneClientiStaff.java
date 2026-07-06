@@ -25,6 +25,7 @@ public class GestioneClientiStaff {
     private JFrame frameChiamante;
     private Controller controller;
     private DefaultTableModel modelloTabella;
+    private ValidazioneInput validationInput;
 
     public GestioneClientiStaff(Controller controller, JFrame frameChiamante) {
         this.controller = controller;
@@ -62,19 +63,46 @@ public class GestioneClientiStaff {
 
         btnAggiungi.addActionListener(e -> {
             String cf = JOptionPane.showInputDialog(mainPanel, "Codice Fiscale:");
-            if (cf == null || cf.trim().isEmpty()) return;
+            if (cf == null) return;
+            if (!validationInput.isCodiceFiscaleValido(cf)) {
+                JOptionPane.showMessageDialog(mainPanel, "Codice Fiscale non valido! Deve essere di 16 caratteri alfanumerici standard.", "Errore Input", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            cf = cf.trim().toUpperCase();
+
             String nome = JOptionPane.showInputDialog(mainPanel, "Nome:");
-            if (nome == null || nome.trim().isEmpty()) return;
+            if (nome == null) return;
+            if (!validationInput.isNomeCognomeValido(nome)) {
+                JOptionPane.showMessageDialog(mainPanel, "Nome non valido! Sono ammesse solo lettere (senza spazi, min 2 caratteri).", "Errore Input", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             String cognome = JOptionPane.showInputDialog(mainPanel, "Cognome:");
-            if (cognome == null || cognome.trim().isEmpty()) return;
+            if (cognome == null) return;
+            if (!validationInput.isNomeCognomeValido(cognome)) {
+                JOptionPane.showMessageDialog(mainPanel, "Cognome non valido! Sono ammesse solo lettere (senza spazi, min 2 caratteri).", "Errore Input", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             String email = JOptionPane.showInputDialog(mainPanel, "Email:");
+            if (email == null) return;
+            if (!validationInput.isEmailValida(email)) {
+                JOptionPane.showMessageDialog(mainPanel, "Indirizzo Email non valido! Deve contenere la '@' e un dominio reale (es. nome@mail.com).", "Errore Input", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             String telefono = JOptionPane.showInputDialog(mainPanel, "Telefono:");
+            if (telefono == null) return;
+            if (!validationInput.isTelefonoValido(telefono)) {
+                JOptionPane.showMessageDialog(mainPanel, "Numero di telefono non valido! Inserire solo cifre numeriche (tra 9 e 11 cifre).", "Errore Input", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
-            Cliente nuovo = new Cliente(cf, nome, cognome, email, telefono, "1234", null, 0, "", 0, "", "", StatoAccount.ATTIVO);
+            Cliente nuovoCliente = new Cliente(cf, nome, cognome, email, telefono, "1234", null, 0, "", 0, "", "", StatoAccount.ATTIVO);
 
-            if (controller.aggiungiClienteTramiteStaff(nuovo)) {
+            if (controller.aggiungiClienteTramiteStaff(nuovoCliente)) {
                 JOptionPane.showMessageDialog(mainPanel, "Cliente registrato! Procediamo con l'abbonamento.");
-                gestisciAbbonamento(nuovo); // Richiama la funzione automatica
+                gestisciAbbonamento(nuovoCliente);
                 aggiornaTabella();
             } else {
                 JOptionPane.showMessageDialog(mainPanel, "Errore inserimento. Controlla se il CF esiste già.");
@@ -95,17 +123,38 @@ public class GestioneClientiStaff {
 
             String nuovoNome = JOptionPane.showInputDialog(mainPanel, "Modifica Nome:", vecchioNome);
             if (nuovoNome == null) return;
+            if (!validationInput.isNomeCognomeValido(nuovoNome)) {
+                JOptionPane.showMessageDialog(mainPanel, "Nome modificato non valido! Solo lettere consentite.", "Errore Input", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             String nuovoCognome = JOptionPane.showInputDialog(mainPanel, "Modifica Cognome:", vecchioCognome);
             if (nuovoCognome == null) return;
+            if (!validationInput.isNomeCognomeValido(nuovoCognome)) {
+                JOptionPane.showMessageDialog(mainPanel, "Cognome modificato non valido! Solo lettere consentite.", "Errore Input", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             String nuovaEmail = JOptionPane.showInputDialog(mainPanel, "Modifica Email:", vecchiaEmail);
+            if (nuovaEmail == null) return;
+            if (!validationInput.isEmailValida(nuovaEmail)) {
+                JOptionPane.showMessageDialog(mainPanel, "Email modificata non valida! Controllare il formato.", "Errore Input", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             String nuovoTel = JOptionPane.showInputDialog(mainPanel, "Modifica Telefono:", vecchioTel);
+            if (nuovoTel == null) return;
+            if (!validationInput.isTelefonoValido(nuovoTel)) {
+                JOptionPane.showMessageDialog(mainPanel, "Telefono modificato non valido! Solo cifre numeriche ammesse.", "Errore Input", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
             Cliente modificato = new Cliente(cf, nuovoNome, nuovoCognome, nuovaEmail, nuovoTel, "", null, 0, "", 0, "", "", StatoAccount.ATTIVO);
 
             if (controller.modificaClienteTramiteStaff(modificato)) {
                 int risposta = JOptionPane.showConfirmDialog(mainPanel, "Dati aggiornati. Vuoi assegnare o rinnovare l'abbonamento?", "Rinnovo", JOptionPane.YES_NO_OPTION);
                 if (risposta == JOptionPane.YES_OPTION) {
-                    gestisciAbbonamento(modificato); // Richiama la funzione automatica
+                    gestisciAbbonamento(modificato);
                 }
                 aggiornaTabella();
             }

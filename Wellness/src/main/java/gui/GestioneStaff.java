@@ -5,7 +5,6 @@ import model.enums.RuoloStaff;
 import model.utenti.Staff;
 
 import javax.swing.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class GestioneStaff {
@@ -21,6 +20,7 @@ public class GestioneStaff {
     public JFrame frame;
     private JFrame frameChiamante;
     private Controller controller;
+    private ValidazioneInput validazioneInput;
 
     public GestioneStaff(Controller controller, JFrame frameChiamante) {
         this.controller = controller;
@@ -80,7 +80,7 @@ public class GestioneStaff {
     }
 
     private void aggiungiStaff() {
-        String cf = chiediTesto("Codice Fiscale", null);
+        /*String cf = chiediTesto("Codice Fiscale", null);
         if (cf == null) return;
         String nome = chiediTesto("Nome", null);
         if (nome == null) return;
@@ -100,11 +100,72 @@ public class GestioneStaff {
         Staff nuovo = new Staff(cf, nome, cognome, email, telefono, "staff123", null, 0, null, 0, null, null, qualifica, iban, ruolo);
         boolean esito = controller.aggiungiStaff(nuovo);
         JOptionPane.showMessageDialog(frame, esito ? "Staff aggiunto." : "Aggiunta non riuscita. Controlla che CF/email non esistano gia'.");
+        if (esito) aggiornaLista();*/
+        String cf = chiediTesto("Codice Fiscale", null);
+        if (cf == null) return;
+        if (!validazioneInput.isCodiceFiscaleValido(cf)) {
+            JOptionPane.showMessageDialog(frame, "Codice Fiscale non valido! Deve essere di 16 caratteri alfanumerici.", "Errore Input", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        cf = cf.toUpperCase();
+
+        String nome = chiediTesto("Nome", null);
+        if (nome == null) return;
+        if (!validazioneInput.isNomeCognomeValido(nome)) {
+            JOptionPane.showMessageDialog(frame, "Nome non valido! Sono ammesse solo lettere (senza spazi, min 2 caratteri).", "Errore Input", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String cognome = chiediTesto("Cognome", null);
+        if (cognome == null) return;
+        if (!validazioneInput.isNomeCognomeValido(cognome)) {
+            JOptionPane.showMessageDialog(frame, "Cognome non valido! Sono ammesse solo lettere (senza spazi, min 2 caratteri).", "Errore Input", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String email = chiediTesto("Email", null);
+        if (email == null) return;
+        if (!validazioneInput.isEmailValida(email)) {
+            JOptionPane.showMessageDialog(frame, "Indirizzo Email non valido! Controllare la presenza di '@' e del dominio.", "Errore Input", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String telefono = JOptionPane.showInputDialog(frame, "Telefono", "");
+        if (telefono == null) return;
+        if (telefono.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Il campo Telefono non puo' essere vuoto.", "Errore", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (!validazioneInput.isTelefonoValido(telefono)) {
+            JOptionPane.showMessageDialog(frame, "Numero di telefono non valido! Inserire solo cifre numeriche (9-11 cifre).", "Errore Input", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String qualifica = JOptionPane.showInputDialog(frame, "Qualifica", "");
+        if (qualifica == null) return;
+        if (qualifica.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Il campo Qualifica non puo' essere vuoto.", "Errore", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String iban = JOptionPane.showInputDialog(frame, "IBAN", "");
+        if (iban == null) return;
+        if (iban.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Il campo IBAN non puo' essere vuoto.", "Errore", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        RuoloStaff ruolo = chiediRuolo(null);
+        if (ruolo == null) return;
+
+        Staff nuovo = new Staff(cf, nome, cognome, email, telefono.trim(), "staff123", null, 0, null, 0, null, null, qualifica.trim(), iban.trim(), ruolo);
+        boolean esito = controller.aggiungiStaff(nuovo);
+        JOptionPane.showMessageDialog(frame, esito ? "Staff aggiunto." : "Aggiunta non riuscita. Controlla che CF/email non esistano gia'.");
         if (esito) aggiornaLista();
     }
 
     private void modificaStaff(Staff s) {
-        String nome = chiediTesto("Nome", s.getNome());
+        /*String nome = chiediTesto("Nome", s.getNome());
         if (nome == null) return;
         String cognome = chiediTesto("Cognome", s.getCognome());
         if (cognome == null) return;
@@ -123,6 +184,60 @@ public class GestioneStaff {
                 s.getEta(), s.getVia(), s.getCivico(), s.getCap(), s.getCartaFedelta(), qualifica, iban, ruolo);
         boolean esito = controller.modificaStaff(modificato);
         JOptionPane.showMessageDialog(frame, esito ? "Staff modificato." : "Modifica non riuscita.");
+        if (esito) aggiornaLista();*/
+        String nome = chiediTesto("Nome", s.getNome());
+        if (nome == null) return;
+        if (!validazioneInput.isNomeCognomeValido(nome)) {
+            JOptionPane.showMessageDialog(frame, "Nome non valido! Sono ammesse solo lettere (senza spazi, min 2 caratteri).", "Errore Input", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String cognome = chiediTesto("Cognome", s.getCognome());
+        if (cognome == null) return;
+        if (!validazioneInput.isNomeCognomeValido(cognome)) {
+            JOptionPane.showMessageDialog(frame, "Cognome non valido! Sono ammesse solo lettere (senza spazi, min 2 caratteri).", "Errore Input", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String email = chiediTesto("Email", s.getEmail());
+        if (email == null) return;
+        if (!validazioneInput.isEmailValida(email)) {
+            JOptionPane.showMessageDialog(frame, "Indirizzo Email non valido! Controllare il formato.", "Errore Input", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String telefono = JOptionPane.showInputDialog(frame, "Telefono", s.getTelefono() == null ? "" : s.getTelefono());
+        if (telefono == null) return;
+        if (telefono.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Il campo Telefono non puo' essere vuoto.", "Errore", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (!validazioneInput.isTelefonoValido(telefono)) {
+            JOptionPane.showMessageDialog(frame, "Numero di telefono non valido! Inserire solo cifre numeriche (9-11 cifre).", "Errore Input", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String qualifica = JOptionPane.showInputDialog(frame, "Qualifica", s.getQualifica() == null ? "" : s.getQualifica());
+        if (qualifica == null) return;
+        if (qualifica.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Il campo Qualifica non puo' essere vuoto.", "Errore", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String iban = JOptionPane.showInputDialog(frame, "IBAN", s.getIban() == null ? "" : s.getIban());
+        if (iban == null) return;
+        if (iban.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Il campo IBAN non puo' essere vuoto.", "Errore", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        RuoloStaff ruolo = chiediRuolo(s.getRuolo());
+        if (ruolo == null) return;
+
+        Staff modificato = new Staff(s.getCodiceFiscale(), nome, cognome, email, telefono.trim(), s.getPassword(), s.getDataNascita(),
+                s.getEta(), s.getVia(), s.getCivico(), s.getCap(), s.getCartaFedelta(), qualifica.trim(), iban.trim(), ruolo);
+        boolean esito = controller.modificaStaff(modificato);
+        JOptionPane.showMessageDialog(frame, esito ? "Staff modified." : "Modifica non riuscita.");
         if (esito) aggiornaLista();
     }
 

@@ -195,11 +195,20 @@ import java.util.List;
             if (u instanceof Cliente) {
                 Cliente cliente = (Cliente) u;
                 if (cliente.getStatoAcc() == StatoAccount.BLOCCATO) {
-                    return "Il tuo account è bloccato. Contatta la segreteria.";
+                    return "Il tuo account è BLOCCATO perché non hai mai caricato un certificato medico. " +
+                            "Per sbloccarlo, recati di persona in segreteria.";
                 }
-                if (cliente.getStatoAcc() == StatoAccount.IN_REVISIONE) {
-                    return "Il tuo account è attualmente in revisione. Contatta la segreteria.";
-                }
+            }
+            return null;
+        }
+
+        public String verificaPermessoPrenotazione(Cliente cliente) {
+            if (cliente.getStatoAcc() == StatoAccount.IN_REVISIONE) {
+                return "Azione non consentita: uno dei tuoi certificati medici è SCADUTO. " +
+                        "Contatta la segreteria per aggiornare il documento e riabilitare le prenotazioni.";
+            }
+            if (cliente.getStatoAcc() == StatoAccount.BLOCCATO) {
+                return "Il tuo account è bloccato. Impossibile procedere.";
             }
             return null;
         }
@@ -218,6 +227,10 @@ import java.util.List;
         }
 
         public boolean prenotaLezioneCliente(Cliente cliente, Lezione lezione, StatoPrenotazione statoPrenotazione) {
+            if (cliente.getStatoAcc() == StatoAccount.IN_REVISIONE || cliente.getStatoAcc() == StatoAccount.BLOCCATO) {
+                return false;
+            }
+
             LocalDate dataPren = LocalDate.now();
             LocalTime oraPren = LocalTime.now();
 

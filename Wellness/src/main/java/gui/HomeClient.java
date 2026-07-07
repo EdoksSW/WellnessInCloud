@@ -6,8 +6,6 @@ import model.utenti.Cliente;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class HomeClient {
 
@@ -52,36 +50,30 @@ public class HomeClient {
             frame.dispose();
         });
 
-        txtOrdini.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.setVisible(false);
-
-                new OrdiniClient(controller, clienteLoggato, frame);
-            }
-        });
-        txtCarrello.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.setVisible(false);
-                 new CarrelloClient(controller, clienteLoggato, frame);
-            }
+        txtOrdini.addActionListener(e -> {
+            frame.setVisible(false);
+            new OrdiniClient(controller, clienteLoggato, frame);
         });
 
-        txtShop.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.setVisible(false);
-                new ShopClient(controller,clienteLoggato,frame);
-            }
+        txtCarrello.addActionListener(e -> {
+            frame.setVisible(false);
+            new CarrelloClient(controller, clienteLoggato, frame);
+        });
+
+        txtShop.addActionListener(e -> {
+            frame.setVisible(false);
+            new ShopClient(controller, clienteLoggato, frame);
         });
 
 
-        txtPrenotazioni.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        txtPrenotazioni.addActionListener(e -> {
+            String messaggioErrore = controller.verificaPermessoPrenotazione(clienteLoggato);
+
+            if (messaggioErrore != null) {
+                JOptionPane.showMessageDialog(panel1, messaggioErrore, "Accesso Negato", JOptionPane.WARNING_MESSAGE);
+            } else {
                 frame.setVisible(false);
-                new PrenotazioniClient(controller,clienteLoggato,frame);
+                new PrenotazioniClient(controller, clienteLoggato, frame);
             }
         });
 

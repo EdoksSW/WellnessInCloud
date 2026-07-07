@@ -1,5 +1,6 @@
 package gui;
 
+import java.time.LocalDate;
 import java.util.regex.Pattern;
 
 public class ValidazioneInput
@@ -67,5 +68,12 @@ public class ValidazioneInput
         if(password == null || password.trim().isEmpty()) return false;
 
         return Pattern.matches(REGEX_PASSWORD, password.trim());
+    }
+
+    public static String generaPathCertificato(String nome, String cognome, LocalDate data) {
+        if (nome == null || cognome == null || data == null) return "";
+        String nomePulito = nome.toLowerCase().replaceAll("\\s+", "");
+        String cognomePulito = cognome.toLowerCase().replaceAll("\\s+", "");
+        return "/certificati/" + nomePulito + cognomePulito + "_" + data + ".pdf";
     }
 }

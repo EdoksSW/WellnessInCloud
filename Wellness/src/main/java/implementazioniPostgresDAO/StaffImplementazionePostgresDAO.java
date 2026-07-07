@@ -3,6 +3,7 @@ package implementazioniPostgresDAO;
 import dao.StaffDAO;
 import database.ConnessioneDatabase;
 import model.enums.RuoloStaff;
+import model.logistica.Prenotazione;
 import model.utenti.Staff;
 
 import java.sql.Connection;
@@ -11,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 
 public class StaffImplementazionePostgresDAO implements StaffDAO {
 
@@ -344,39 +346,65 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
     }
 
     @Override
-    public LocalDate getCertificatoDaStaff(String codiceFiscale) {
-        String query = "SELECT data_scadenza FROM certificato WHERE cf_cliente = ?;";
-        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
-            ps.setString(1, codiceFiscale);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    java.sql.Date dataSQL = rs.getDate("data_scadenza");
-                    if (dataSQL != null) return dataSQL.toLocalDate();
+    public ArrayList<String[]> getListaCertificatiCompleta() {
+        ArrayList<String[]> lista = new ArrayList<>();
+        String query = "SELECT u.codice_fiscale, u.nome, u.cognome, c.data_scadenza, c.percorso_file " +
+                "FROM utente u " +
+                "INNER JOIN cliente cl ON u.codice_fiscale = cl.codice_fiscale " +
+                "LEFT JOIN certificato c ON u.codice_fiscale = c.cf_cliente " +
+                "ORDER BY u.cognome, u.nome, c.data_scadenza DESC;";
+
+        try (PreparedStatement ps = this.connection.prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String cf = rs.getString("codice_fiscale");
+                String nome = rs.getString("nome");
+                String cognome = rs.getString("cognome");
+                java.sql.Date scadenzaSQL = rs.getDate("data_scadenza");
+                String percorso = rs.getString("percorso_file");
+
+                String stato = "Nessun certificato registrato";
+                String path = "Nessun file caricato";
+
+                if (scadenzaSQL != null) {
+                    LocalDate scadenza = scadenzaSQL.toLocalDate();
+                    if (scadenza.isBefore(LocalDate.now())) {
+                        stato = "SCADUTO (Scadenza: " + scadenza + ")";
+                    } else {
+                        stato = "Valido fino al: " + scadenza;
+                    }
                 }
+                if (percorso != null) {
+                    path = percorso;
+                }
+
+                lista.add(new String[]{cf, nome, cognome, stato, path});
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("Errore in getListaCertificatiCompleta: " + e.getMessage());
         }
-        return null;
+        return lista;
     }
 
     @Override
-    public boolean aggiornaCertificatoDaStaff(String codiceFiscale, LocalDate nuovaScadenza) {
-        String updateQuery = "UPDATE certificato SET data_scadenza = ? WHERE cf_cliente = ?;";
+    public boolean aggiornaCertificatoDaStaff(String codiceFiscale, LocalDate nuovaScadenza, String nuovoPath) {
+        String updateQuery = "UPDATE certificato SET data_scadenza = ?, percorso_file = ? WHERE cf_cliente = ?;";
         try (PreparedStatement psUpdate = this.connection.prepareStatement(updateQuery)) {
             psUpdate.setDate(1, java.sql.Date.valueOf(nuovaScadenza));
-            psUpdate.setString(2, codiceFiscale);
+            psUpdate.setString(2, nuovoPath);
+            psUpdate.setString(3, codiceFiscale);
 
             int righeModificate = psUpdate.executeUpdate();
 
             if (righeModificate > 0) {
                 return true;
             } else {
-                String insertQuery = "INSERT INTO certificato (data_emissione, data_scadenza, cf_cliente) VALUES (?, ?, ?);";
+                String insertQuery = "INSERT INTO certificato (data_emissione, data_scadenza, percorso_file, cf_cliente) VALUES (?, ?, ?, ?);";
                 try (PreparedStatement psInsert = this.connection.prepareStatement(insertQuery)) {
                     psInsert.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
                     psInsert.setDate(2, java.sql.Date.valueOf(nuovaScadenza));
-                    psInsert.setString(3, codiceFiscale);
+                    psInsert.setString(3, nuovoPath);
+                    psInsert.setString(4, codiceFiscale);
                     return psInsert.executeUpdate() > 0;
                 }
             }
@@ -420,8 +448,8 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
     }
 
     @Override
-    public java.util.List<model.logistica.Prenotazione> ottieniTuttePrenotazioni() {
-        java.util.List<model.logistica.Prenotazione> lista = new java.util.ArrayList<>();
+    public List<Prenotazione> ottieniTuttePrenotazioni() {
+        List<model.logistica.Prenotazione> lista = new ArrayList<>();
 
         String query = "SELECT p.id_prenotazione, p.data_pren, p.ora_pren, p.stato_prenotazione, p.cf_cliente, l.id_lezione, l.nome AS nome_lezione " +
                 "FROM prenotazione p JOIN lezione l ON p.id_lezione = l.id_lezione " +
@@ -446,8 +474,69 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
                 lista.add(new model.logistica.Prenotazione(id, data, ora, stato, c, lez));
             }
         } catch (SQLException e) {
-            System.err.println("Errore nel recupero di tutte le prenotazioni: " + e.getMessage());
+            System.out.println("Errore nel recupero di tutte le prenotazioni: " + e.getMessage());
         }
         return lista;
+    }
+
+    @Override
+    public String getPathCertificatoDaStaff(String codiceFiscale) {
+        String query = "SELECT percorso_file FROM certificato WHERE cf_cliente = ? ORDER BY data_scadenza DESC LIMIT 1;";
+        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
+            ps.setString(1, codiceFiscale);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String path = rs.getString("percorso_file");
+                    if (path != null) return path;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Errore in getPathCertificatoDaStaff: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return "Nessun file caricato";
+    }
+
+    @Override
+    public boolean modificaCertificatoSpecifico(String codiceFiscale, LocalDate nuovaScadenza, String nuovoPath, String vecchioPath) {
+        String updateQuery = "UPDATE certificato SET data_scadenza = ?, percorso_file = ? WHERE cf_cliente = ? AND percorso_file = ?;";
+        try (PreparedStatement psUpdate = this.connection.prepareStatement(updateQuery)) {
+            psUpdate.setDate(1, java.sql.Date.valueOf(nuovaScadenza));
+            psUpdate.setString(2, nuovoPath);
+            psUpdate.setString(3, codiceFiscale);
+            psUpdate.setString(4, vecchioPath);
+            return psUpdate.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Errore in modificaCertificatoSpecifico: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean inserisciCertificatoDaStaff(String codiceFiscale, LocalDate nuovaScadenza, String nuovoPath) {
+        String insertQuery = "INSERT INTO certificato (data_emissione, data_scadenza, percorso_file, cf_cliente) VALUES (?, ?, ?, ?);";
+        try (PreparedStatement psInsert = this.connection.prepareStatement(insertQuery)) {
+            psInsert.setDate(1, java.sql.Date.valueOf(LocalDate.now()));
+            psInsert.setDate(2, java.sql.Date.valueOf(nuovaScadenza));
+            psInsert.setString(3, nuovoPath);
+            psInsert.setString(4, codiceFiscale);
+            return psInsert.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Errore in inserisciCertificatoDaStaff: " + e.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean modificaStatoPrenotazione(int idPrenotazione, String nuovoStato) {
+        String query = "UPDATE prenotazione SET stato_prenotazione = ? WHERE id_prenotazione = ?;";
+        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
+            ps.setString(1, nuovoStato);
+            ps.setInt(2, idPrenotazione);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Errore in modificaStatoPrenotazione: " + e.getMessage());
+            return false;
+        }
     }
 }

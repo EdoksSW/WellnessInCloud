@@ -96,7 +96,7 @@ public class CarrelloClient {
                 int risposta = JOptionPane.showConfirmDialog(frame, "Vuoi procedere con l'acquisto?", "Conferma l'ordine", JOptionPane.YES_NO_OPTION);
                 if(risposta == JOptionPane.YES_OPTION)
                 {
-                    // [Passaggio Logico Allineato]: Invochiamo il controller passando l'oggetto clienteLoggato intero
+                    // Invochiamo il controller passando l'oggetto clienteLoggato intero
                     if(controller.finalizzaAcquisto(clienteLoggato))
                     {
                         JOptionPane.showMessageDialog(frame, "Acquisto effettuato con successo!", "Successo", JOptionPane.INFORMATION_MESSAGE);

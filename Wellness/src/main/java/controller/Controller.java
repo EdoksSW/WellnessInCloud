@@ -316,4 +316,10 @@ import java.util.List;
             StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
             return staffDAO.modificaCertificatoSpecifico(cf, nuovaScadenza, nuovoPath, vecchioPath);
         }
+
+        public boolean modificaStatoPrenotazioneStaff(int idPrenotazione, StatoPrenotazione nuovoStato) {
+            StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
+
+            return staffDAO.modificaStatoPrenotazione(idPrenotazione, nuovoStato.getLabel());
+        }
     }

@@ -1,6 +1,7 @@
 package gui;
 
 import controller.Controller;
+import model.enums.StatoPrenotazione;
 import model.logistica.Prenotazione;
 
 import javax.swing.*;
@@ -13,6 +14,7 @@ public class GestionePrenotazioniStaff {
     private JTable tablePrenotazioni;
     private JButton btnCancella;
     private JButton btnIndietro;
+    private JButton btnStatoButton;
     private DefaultTableModel modelloTabella;
     public JFrame frame;
     private JFrame frameChiamante;
@@ -22,7 +24,6 @@ public class GestionePrenotazioniStaff {
         this.controller = controller;
         this.frameChiamante = frameChiamante;
 
-        // Aggiunta la colonna Cliente (CF)
         String[] colonne = {"ID", "Cliente (CF)", "Data", "Ora", "Corso/Lezione", "Stato"};
         modelloTabella = new DefaultTableModel(colonne, 0) {
             @Override
@@ -51,9 +52,40 @@ public class GestionePrenotazioniStaff {
                 boolean successo = controller.annullaPrenotazioneCliente(idPrenotazione);
                 if (successo) {
                     JOptionPane.showMessageDialog(mainPanel, "Prenotazione cancellata con successo!");
-                    caricaTabella(); // Ricarica la tabella globale
+                    caricaTabella();
                 } else {
                     JOptionPane.showMessageDialog(mainPanel, "Errore durante la cancellazione nel database.", "Errore", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        btnStatoButton.addActionListener(e -> {
+            int rigaSelezionata = tablePrenotazioni.getSelectedRow();
+            if (rigaSelezionata == -1) {
+                JOptionPane.showMessageDialog(mainPanel, "Seleziona prima una prenotazione dalla tabella per modificarne lo stato!", "Attenzione", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int idPrenotazione = (int) modelloTabella.getValueAt(rigaSelezionata, 0);
+            StatoPrenotazione[] statiDisponibili = StatoPrenotazione.values();
+
+            StatoPrenotazione scelta = (StatoPrenotazione) JOptionPane.showInputDialog(
+                    mainPanel,
+                    "Seleziona il nuovo stato per la prenotazione ID " + idPrenotazione + ":",
+                    "Cambia Stato Prenotazione",
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    statiDisponibili,
+                    statiDisponibili[0]
+            );
+
+            if (scelta != null) {
+                boolean successo = controller.modificaStatoPrenotazioneStaff(idPrenotazione, scelta);
+                if (successo) {
+                    JOptionPane.showMessageDialog(mainPanel, "Stato della prenotazione aggiornato con successo!");
+                    caricaTabella();
+                } else {
+                    JOptionPane.showMessageDialog(mainPanel, "Errore durante l'aggiornamento dello stato nel database.", "Errore", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -63,6 +95,7 @@ public class GestionePrenotazioniStaff {
         mainPanel.add(new JScrollPane(tablePrenotazioni), BorderLayout.CENTER);
 
         JPanel panelBottoni = new JPanel();
+        panelBottoni.add(btnStatoButton);
         panelBottoni.add(btnCancella);
         panelBottoni.add(btnIndietro);
         mainPanel.add(panelBottoni, BorderLayout.SOUTH);

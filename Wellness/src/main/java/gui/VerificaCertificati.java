@@ -5,8 +5,6 @@ import model.utenti.Cliente;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -40,35 +38,59 @@ public class VerificaCertificati {
             frame.dispose();
         });
 
+        // Logica di aggiunta slegata dalla selezione della tabella
         btnAggiungi.addActionListener(e -> {
-            int riga = tabellaCertificati.getSelectedRow();
-            if (riga == -1) {
-                JOptionPane.showMessageDialog(mainPanel, "Seleziona un cliente.");
+            ArrayList<Cliente> listaClienti = controller.getListaClientiDaStaff();
+
+            if (listaClienti == null || listaClienti.isEmpty()) {
+                JOptionPane.showMessageDialog(mainPanel, "Non ci sono clienti registrati nel sistema.", "Attenzione", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            String cf = (String) modelloTabella.getValueAt(riga, 0);
-            String nome = (String) modelloTabella.getValueAt(riga, 1);
-            String cognome = (String) modelloTabella.getValueAt(riga, 2);
+            JComboBox<String> comboClienti = new JComboBox<>();
+            // MODIFICA QUI: Formattazione anti-omonimia con Cognome, Nome, Email e CF
+            for (Cliente c : listaClienti) {
+                String infoCliente = c.getCognome().toUpperCase() + " " + c.getNome() +
+                        " (" + c.getEmail() + ") - CF: " + c.getCodiceFiscale();
+                comboClienti.addItem(infoCliente);
+            }
 
-            String inputData = JOptionPane.showInputDialog(mainPanel, "Inserisci la data di scadenza del NUOVO certificato (AAAA-MM-GG):");
-            if (inputData != null && !inputData.trim().isEmpty()) {
-                try {
-                    LocalDate nuovaScadenza = LocalDate.parse(inputData.trim());
-                    String nuovoPath = ValidazioneInput.generaPathCertificato(nome, cognome, nuovaScadenza);
+            int sceltaCliente = JOptionPane.showConfirmDialog(
+                    mainPanel,
+                    comboClienti,
+                    "Seleziona il Cliente per il nuovo certificato",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
 
-                    if (controller.inserisciCertificatoStaff(cf, nuovaScadenza, nuovoPath)) {
-                        JOptionPane.showMessageDialog(mainPanel, "Nuovo certificato aggiunto allo storico con successo.");
-                        aggiornaTabella();
-                    } else {
-                        JOptionPane.showMessageDialog(mainPanel, "Errore durante l'inserimento del certificato.", "Errore", JOptionPane.ERROR_MESSAGE);
+            if (sceltaCliente == JOptionPane.OK_OPTION) {
+                int index = comboClienti.getSelectedIndex();
+                Cliente clienteScelto = listaClienti.get(index);
+
+                String cf = clienteScelto.getCodiceFiscale();
+                String nome = clienteScelto.getNome();
+                String cognome = clienteScelto.getCognome();
+
+                String inputData = JOptionPane.showInputDialog(mainPanel, "Inserisci la data di scadenza del certificato (AAAA-MM-GG):");
+                if (inputData != null && !inputData.trim().isEmpty()) {
+                    try {
+                        LocalDate nuovaScadenza = LocalDate.parse(inputData.trim());
+                        String nuovoPath = ValidazioneInput.generaPathCertificato(nome, cognome, nuovaScadenza);
+
+                        if (controller.inserisciCertificatoStaff(cf, nuovaScadenza, nuovoPath)) {
+                            JOptionPane.showMessageDialog(mainPanel, "Nuovo certificato aggiunto con successo per " + nome + " " + cognome + ".");
+                            aggiornaTabella();
+                        } else {
+                            JOptionPane.showMessageDialog(mainPanel, "Errore durante l'inserimento del certificato.", "Errore", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } catch (DateTimeParseException ex) {
+                        JOptionPane.showMessageDialog(mainPanel, "Formato data non valido! Usa AAAA-MM-GG.", "Errore Formato", JOptionPane.ERROR_MESSAGE);
                     }
-                } catch (DateTimeParseException ex) {
-                    JOptionPane.showMessageDialog(mainPanel, "Formato data non valido! Usa AAAA-MM-GG.", "Errore Formato", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
 
+        // La modifica rimane agganciata alla riga per correggere un errore specifico
         btnModificaScadenza.addActionListener(e -> {
             int riga = tabellaCertificati.getSelectedRow();
             if (riga == -1) {

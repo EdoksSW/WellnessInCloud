@@ -39,5 +39,7 @@ public interface ClienteDAO
 
     public boolean aggiungiSingoloProdotto(String cfCliente, int idProdotto, int quantita);
 
+    public boolean rimuoviSingoloProdotto(String cfCliente, int idProdotto, int quantita);
+
     public boolean annullaOrdineInElaborazione(int idOrdine);
 }

@@ -110,9 +110,15 @@ public class GestionePrenotazioniStaff {
     private void caricaTabella() {
         modelloTabella.setRowCount(0);
         List<Prenotazione> prenotazioni = controller.ottieniTuttePrenotazioniStaff();
+        if (prenotazioni == null) {
+            return;
+        }
         for (Prenotazione p : prenotazioni) {
+            String cf = (p.getCliente() != null) ? p.getCliente().getCodiceFiscale() : "N/A";
+            String nomeLezione = (p.getLezione() != null) ? p.getLezione().getNome() : "N/A";
+            String stato = (p.getStato() != null) ? p.getStato().getLabel() : "N/A";
             modelloTabella.addRow(new Object[]{
-                    p.getIdPrenotazione(), p.getCliente().getCodiceFiscale(), p.getDataPren(), p.getOraPren(), p.getLezione().getNome(), p.getStato().getLabel()
+                    p.getIdPrenotazione(), cf, p.getDataPren(), p.getOraPren(), nomeLezione, stato
             });
         }
     }

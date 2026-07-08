@@ -78,3 +78,29 @@ CREATE CONSTRAINT TRIGGER trg_totalita_utente
 AFTER INSERT OR UPDATE ON utente
 DEFERRABLE INITIALLY DEFERRED
 FOR EACH ROW EXECUTE FUNCTION check_totalita_utente();
+
+
+-- ============================================================
+--  4) TOTALE CARRELLO
+--  Ricalcola carrello.totale a ogni modifica delle righe carrello.
+-- ============================================================
+CREATE OR REPLACE FUNCTION aggiorna_totale_carrello() RETURNS trigger AS $$
+DECLARE
+    v_car integer := COALESCE(NEW.id_carrello, OLD.id_carrello);
+BEGIN
+    UPDATE carrello
+    SET totale = COALESCE((
+        SELECT SUM(dc.quantita * p.prezzo)
+        FROM dettaglio_carrello dc
+        JOIN prodotto p ON p.id_prodotto = dc.id_prodotto
+        WHERE dc.id_carrello = v_car
+    ), 0)
+    WHERE id_carrello = v_car;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_totale_carrello ON dettaglio_carrello;
+CREATE TRIGGER trg_totale_carrello
+AFTER INSERT OR UPDATE OR DELETE ON dettaglio_carrello
+FOR EACH ROW EXECUTE FUNCTION aggiorna_totale_carrello();

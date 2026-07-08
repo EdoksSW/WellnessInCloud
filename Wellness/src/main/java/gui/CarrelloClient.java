@@ -20,6 +20,7 @@ public class CarrelloClient {
     private JPanel lblCmAcquisti;
     private JButton txtAcquista;
     private JTextField lblTotale;
+    private DefaultTableModel modelloCarrello;
 
     private Controller controller;
     private Cliente clienteLoggato;
@@ -32,52 +33,84 @@ public class CarrelloClient {
         this.clienteLoggato=cliente;
         this.frameChiamante=frameChiamante;
 
-        String[] colonne={"Prodotto","Prezzo Unitario", "Quantità","Subtotale"};
+        String[] colonne={"ID","Prodotto","Prezzo Unitario", "Quantità","Subtotale"};
 
-        DefaultTableModel defaultTableModel=new DefaultTableModel(colonne, 0)
+        modelloCarrello=new DefaultTableModel(colonne, 0)
         {
             public boolean isCellEditable(int row, int column) {return false;}
         };
 
-        //recupero dell'oggetto Carrello dal DB tramite il controller
-        Carrello carrello= controller. ottieniCarrelloCliente(clienteLoggato);
-
-        //Variabile di supporto per accumulare il costro totale se il carrello è vuoto
-        double totaleSpeso=0.0;
-
-        if(carrello != null && carrello.getMapCarrellol() != null && !carrello.getMapCarrellol().isEmpty())
-        {
-            for (Map.Entry<Prodotto, Integer> entry : carrello.getMapCarrellol().entrySet())
-            {
-                Prodotto prodotto=entry.getKey();
-                int quantita = entry.getValue();
-
-                Object[] riga= new Object[4];
-                riga[0]=prodotto.getNome();
-                riga[1]="euro "+prodotto.getPrezzo();
-                riga[2]=quantita;
-
-                //Calcolo del subtotale della riga (Presso del singolo prodotto * quantità Acquistata)
-                double subtototale=prodotto.getPrezzo().doubleValue()*quantita;
-                riga[3]="euro"+subtototale;
-
-                //Inserimento della riga all'interno del modello della tabella
-                defaultTableModel.addRow(riga);
-            }
-
-            totaleSpeso=carrello.getTotale().doubleValue();
-        }
-
-        // collegamento del modello dati alla Jtable
-        tabellaCarrello.setModel(defaultTableModel);
+        tabellaCarrello.setModel(modelloCarrello);
         tabellaCarrello.setRowHeight(25);
 
-        //Scrittura totale affianco al bottone Acquiesta
-        lblTotale.setText("Totale Carrello: euro "+ totaleSpeso);
+        tabellaCarrello.getColumnModel().getColumn(0).setMinWidth(0);
+        tabellaCarrello.getColumnModel().getColumn(0).setMaxWidth(0);
+        tabellaCarrello.getColumnModel().getColumn(0).setWidth(0);
+
+        caricaCarrello();
+
+        JButton txtRimuovi=new JButton("Rimuovi");
+        txtComandi.add(txtRimuovi);
+
+        txtRimuovi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int rigaSelezionata=tabellaCarrello.getSelectedRow();
+                if(rigaSelezionata == -1)
+                {
+                    JOptionPane.showMessageDialog(frame,"Seleziona un prodotto dalla tabella per rimuoverlo.","Selezione Mancante", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                int idProdotto=(int) tabellaCarrello.getModel().getValueAt(rigaSelezionata,0);
+                String nomeProdotto=tabellaCarrello.getModel().getValueAt(rigaSelezionata,1).toString();
+                int quantitaInCarrello=(int) tabellaCarrello.getModel().getValueAt(rigaSelezionata,3);
+
+                String inputQuantita=JOptionPane.showInputDialog(frame,"Quantità da rimuovere per '"+nomeProdotto+"' (max "+quantitaInCarrello+"):","Rimuovi dal Carrello", JOptionPane.QUESTION_MESSAGE);
+                if(inputQuantita == null || inputQuantita.trim().isEmpty())
+                {
+                    return;
+                }
+
+                try
+                {
+                    int quantita=Integer.parseInt(inputQuantita.trim());
+                    if(quantita <= 0)
+                    {
+                        JOptionPane.showMessageDialog(frame,"Quantità non valida!");
+                        return;
+                    }
+                    if(quantita > quantitaInCarrello)
+                    {
+                        JOptionPane.showMessageDialog(frame,"Non puoi rimuovere più di "+quantitaInCarrello+" unità.");
+                        return;
+                    }
+
+                    if(controller.rimuoviProdottoCarrello(clienteLoggato, idProdotto, quantita))
+                    {
+                        JOptionPane.showMessageDialog(frame,"Prodotto rimosso correttamente!");
+                        caricaCarrello();
+                    }
+                    else
+                    {
+                        JOptionPane.showMessageDialog(frame,"Si è verificato un errore durante la rimozione.","Errore di Sistema", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+                catch(NumberFormatException ex)
+                {
+                    JOptionPane.showMessageDialog(frame,"Formato non valido! Inserire un valore numerico intero.","Errore Formato", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
         txtHome.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new HomeClient(controller, clienteLoggato, frameChiamante);
+                if (frameChiamante != null) {
+                    frameChiamante.setVisible(true);
+                } else {
+                    new HomeClient(controller, clienteLoggato, null);
+                }
                 frame.dispose();
             }
         });
@@ -119,6 +152,34 @@ public class CarrelloClient {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+
+    private void caricaCarrello()
+    {
+        modelloCarrello.setRowCount(0);
+        Carrello carrello=controller.ottieniCarrelloCliente(clienteLoggato);
+
+        if(carrello != null && carrello.getMapCarrellol() != null && !carrello.getMapCarrellol().isEmpty())
+        {
+            for (Map.Entry<Prodotto, Integer> entry : carrello.getMapCarrellol().entrySet())
+            {
+                Prodotto prodotto=entry.getKey();
+                int quantita=entry.getValue();
+                double prezzo=(prodotto.getPrezzo() != null) ? prodotto.getPrezzo().doubleValue() : 0.0;
+                double subtotale=prezzo*quantita;
+
+                Object[] riga=new Object[5];
+                riga[0]=prodotto.getId_prodotto();
+                riga[1]=prodotto.getNome();
+                riga[2]="euro "+prodotto.getPrezzo();
+                riga[3]=quantita;
+                riga[4]="euro "+subtotale;
+                modelloCarrello.addRow(riga);
+            }
+        }
+
+        double totale=(carrello != null && carrello.getTotale() != null) ? carrello.getTotale().doubleValue() : 0.0;
+        lblTotale.setText("Totale Carrello: euro "+ totale);
     }
 
 }

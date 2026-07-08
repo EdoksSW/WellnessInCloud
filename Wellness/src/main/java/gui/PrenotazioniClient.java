@@ -64,7 +64,11 @@ public class PrenotazioniClient {
         bntHome.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frameChiamante.setVisible(true);
+                if (frameChiamante != null) {
+                    frameChiamante.setVisible(true);
+                } else {
+                    new HomeClient(controller, clienteLoggato, null);
+                }
                 frame.dispose();
             }
         });
@@ -94,7 +98,7 @@ public class PrenotazioniClient {
 
                 int scelta=JOptionPane.showConfirmDialog(frame,"Sei sicuro di voler annullare la prenotazione "+idPrenotazione+"?", "Conferma Annullamento", JOptionPane.YES_NO_OPTION);
 
-                if(scelta == JOptionPane.YES_NO_OPTION)
+                if(scelta == JOptionPane.YES_OPTION)
                 {
                     if(controller.annullaPrenotazioneCliente(idPrenotazione))
                     {
@@ -124,12 +128,5 @@ public class PrenotazioniClient {
         frame.setLocationRelativeTo(null);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
-        bntHome.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frameChiamante.setVisible(true);
-                frame.dispose();
-            }
-        });
     }
 }

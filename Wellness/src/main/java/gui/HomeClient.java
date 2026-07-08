@@ -46,7 +46,11 @@ public class HomeClient {
         lblStato.setForeground(clienteLoggato.getStatoAcc() == StatoAccount.ATTIVO ? new Color(34, 139, 34) : Color.RED);
 
         btnLogout.addActionListener(e -> {
-            frameChiamante.setVisible(true);
+            if (frameChiamante != null) {
+                frameChiamante.setVisible(true);
+            } else {
+                new LoginFrame(controller);
+            }
             frame.dispose();
         });
 

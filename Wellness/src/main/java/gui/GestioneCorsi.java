@@ -52,9 +52,10 @@ public class GestioneCorsi {
                 JPanel riga = new JPanel(new java.awt.BorderLayout(10, 0));
                 riga.setBorder(BorderFactory.createEtchedBorder());
                 String descr = c.getDescrizione() == null ? "" : c.getDescrizione();
+                String istruttore = (c.getIstruttore() != null) ? (c.getIstruttore().getNome() + " " + c.getIstruttore().getCognome()) : "N/A";
                 String info = c.getNome()
                         + "   |   " + descr
-                        + "   |   Istruttore: " + c.getIstruttore().getNome() + " " + c.getIstruttore().getCognome();
+                        + "   |   Istruttore: " + istruttore;
                 riga.add(new JLabel(info), java.awt.BorderLayout.CENTER);
 
                 JPanel azioni = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));

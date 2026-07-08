@@ -116,7 +116,11 @@ public class ShopClient {
         bntHome.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                frameChiamante.setVisible(true);
+                if (frameChiamante != null) {
+                    frameChiamante.setVisible(true);
+                } else {
+                    new HomeClient(controller, clienteLoggato, null);
+                }
                 frame.dispose();
             }
         });

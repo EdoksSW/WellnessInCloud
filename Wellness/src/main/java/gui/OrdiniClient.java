@@ -39,15 +39,18 @@ public class OrdiniClient {
 
         List<Ordine> listaOrdini = controller.ottieniStoricoOrdiniCliente(clienteLoggato);
 
-        for(Ordine ordine: listaOrdini)
+        if(listaOrdini != null)
         {
-            Object[] riga=new Object[4];
-            riga[0] = ordine.getId_ordine();
-            riga[1] = ordine.getData_ordine();
-            riga[2] = "euro " + ordine.getTotale();
-            riga[3] = ordine.getStato();
+            for(Ordine ordine: listaOrdini)
+            {
+                Object[] riga=new Object[4];
+                riga[0] = ordine.getId_ordine();
+                riga[1] = ordine.getData_ordine();
+                riga[2] = "euro " + ordine.getTotale();
+                riga[3] = (ordine.getStato() != null) ? ordine.getStato() : "";
 
-            defaultTableModel.addRow(riga);
+                defaultTableModel.addRow(riga);
+            }
         }
 
         txtTabellaOrdini.setModel(defaultTableModel);
@@ -74,7 +77,8 @@ public class OrdiniClient {
 
                 // [Risoluzione Indici]: ID ordine è colonna 0, lo STATO reale è colonna 3
                 int idOrdine = (int) txtTabellaOrdini.getValueAt(rigaSelezionata, 0);
-                String stato = txtTabellaOrdini.getValueAt(rigaSelezionata, 3).toString();
+                Object statoCell = txtTabellaOrdini.getValueAt(rigaSelezionata, 3);
+                String stato = (statoCell != null) ? statoCell.toString() : "";
 
                 // Controllo logico-stringa: verifica dello stato di lavorazione (gestisce sia con che senza underscore)
                 if (!stato.equalsIgnoreCase("IN ELABORAZIONE") && !stato.equalsIgnoreCase("IN_ELABORAZIONE")) {

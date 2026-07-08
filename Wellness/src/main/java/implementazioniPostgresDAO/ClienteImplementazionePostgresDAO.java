@@ -48,32 +48,36 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
             preparedStatement.setString(1,codiceFiscale);
             try(ResultSet resultSet=preparedStatement.executeQuery())
             {
-                 String email=resultSet.getString("email");
-                 String password=resultSet.getString("password");
-                 String nome=resultSet.getString("nome");
-                 String cognome=resultSet.getString("cognome");
-                 String telefono=resultSet.getString("telefono");
-                 String via=resultSet.getString("via");
-                 int numCivico=resultSet.getInt("civico");
-                 String cap=resultSet.getString("cap");
-                 int eta=resultSet.getInt("eta");
-                 String cartaFedelta=resultSet.getString("carta_fedelta");
+                if(resultSet.next())
+                {
+                    String email=resultSet.getString("email");
+                    String password=resultSet.getString("password");
+                    String nome=resultSet.getString("nome");
+                    String cognome=resultSet.getString("cognome");
+                    String telefono=resultSet.getString("telefono");
+                    String via=resultSet.getString("via");
+                    int numCivico=resultSet.getInt("civico");
+                    String cap=resultSet.getString("cap");
+                    int eta=resultSet.getInt("eta");
+                    String cartaFedelta=resultSet.getString("carta_fedelta");
 
-                 String stato_acc=resultSet.getString("stato_account");
-                 StatoAccount statoAccount=StatoAccount.valueOf(stato_acc.trim().toUpperCase());
+                    String stato_acc=resultSet.getString("stato_account");
+                    StatoAccount statoAccount=StatoAccount.valueOf(stato_acc.trim().toUpperCase());
 
-                 LocalDate dataNascita=null;
-                 if(resultSet.getDate("datanascita")!=null)
-                 {
-                     dataNascita=resultSet.getDate("datanascita").toLocalDate();
-                 }
-                 return new Cliente(codiceFiscale,nome, cognome, email, telefono, password, dataNascita, eta, via, numCivico, cap, cartaFedelta, statoAccount);
+                    LocalDate dataNascita=null;
+                    if(resultSet.getDate("datanascita")!=null)
+                    {
+                        dataNascita=resultSet.getDate("datanascita").toLocalDate();
+                    }
+                    return new Cliente(codiceFiscale,nome, cognome, email, telefono, password, dataNascita, eta, via, numCivico, cap, cartaFedelta, statoAccount);
+                }
             }
         }catch(SQLException e) {
             System.out.println("Errore SQL in trovaPerCodiceFiscale: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
+        return null;
     }
 
     @Override
@@ -153,6 +157,58 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
             return true;
         } catch (SQLException e) {
             System.out.println("Errore inserimento con gestione duplicati: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean rimuoviSingoloProdotto(String cfCliente, int idProdotto, int quantita) {
+        String queryCarrello = "SELECT id_carrello FROM carrello WHERE cf_cliente = ?;";
+        String queryQuantita = "SELECT quantita FROM dettaglio_carrello WHERE id_carrello = ? AND id_prodotto = ?;";
+        String queryDelete = "DELETE FROM dettaglio_carrello WHERE id_carrello = ? AND id_prodotto = ?;";
+        String queryUpdate = "UPDATE dettaglio_carrello SET quantita = quantita - ? WHERE id_carrello = ? AND id_prodotto = ?;";
+
+        try {
+            int idCarrello;
+            try (PreparedStatement ps = this.connection.prepareStatement(queryCarrello)) {
+                ps.setString(1, cfCliente);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        return false;
+                    }
+                    idCarrello = rs.getInt("id_carrello");
+                }
+            }
+
+            int quantitaAttuale;
+            try (PreparedStatement ps = this.connection.prepareStatement(queryQuantita)) {
+                ps.setInt(1, idCarrello);
+                ps.setInt(2, idProdotto);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        return false;
+                    }
+                    quantitaAttuale = rs.getInt("quantita");
+                }
+            }
+
+            if (quantita >= quantitaAttuale) {
+                try (PreparedStatement ps = this.connection.prepareStatement(queryDelete)) {
+                    ps.setInt(1, idCarrello);
+                    ps.setInt(2, idProdotto);
+                    return ps.executeUpdate() > 0;
+                }
+            } else {
+                try (PreparedStatement ps = this.connection.prepareStatement(queryUpdate)) {
+                    ps.setInt(1, quantita);
+                    ps.setInt(2, idCarrello);
+                    ps.setInt(3, idProdotto);
+                    return ps.executeUpdate() > 0;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Errore in rimuoviSingoloProdotto: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -252,7 +308,8 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
 
                     int idPrenotazione = resultSet.getInt("id_prenotazione");
                     LocalDate dataPren = resultSet.getDate("data_pren").toLocalDate();
-                    LocalTime oraPren = resultSet.getTime("ora_pren").toLocalTime();
+                    java.sql.Time oraTime = resultSet.getTime("ora_pren");
+                    LocalTime oraPren = (oraTime != null) ? oraTime.toLocalTime() : null;
 
                     String stato_prenotazione=resultSet.getString("stato_prenotazione");
                     StatoPrenotazione statoPrenotazione=StatoPrenotazione.fromLabel(stato_prenotazione);

@@ -462,7 +462,8 @@ public class StaffImplementazionePostgresDAO implements StaffDAO {
             while (rs.next()) {
                 int id = rs.getInt("id_prenotazione");
                 java.time.LocalDate data = rs.getDate("data_pren").toLocalDate();
-                java.time.LocalTime ora = rs.getTime("ora_pren").toLocalTime();
+                java.sql.Time oraTime = rs.getTime("ora_pren");
+                java.time.LocalTime ora = (oraTime != null) ? oraTime.toLocalTime() : null;
                 model.enums.StatoPrenotazione stato = model.enums.StatoPrenotazione.fromLabel(rs.getString("stato_prenotazione"));
 
                 // Creiamo un cliente "tappo" per memorizzare il codice fiscale da mostrare in tabella

@@ -285,6 +285,12 @@ import java.util.List;
             return clienteDAO.aggiungiSingoloProdotto(cfCliente, idProdotto, quatita);
         }
 
+        public boolean rimuoviProdottoCarrello(Cliente cliente, int idProdotto, int quantita) {
+            ClienteDAO clienteDAO = new ClienteImplementazionePostgresDAO();
+            String cfCliente = cliente.getCodiceFiscale();
+            return clienteDAO.rimuoviSingoloProdotto(cfCliente, idProdotto, quantita);
+        }
+
         public boolean aggiungiClienteTramiteStaff(Cliente nuovoCliente) {
             StaffDAO staffDAO = new StaffImplementazionePostgresDAO();
             return staffDAO.aggiungiClienteDaStaff(nuovoCliente);

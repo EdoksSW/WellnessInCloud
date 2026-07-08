@@ -561,4 +561,37 @@ public class ClienteImplementazionePostgresDAO implements ClienteDAO
             return false;
         }
     }
+
+    @Override
+    public boolean certificatoScadutoOAbbonamentoFinito(String codiceFiscale) {
+        String query = "SELECT " +
+                "COALESCE((SELECT MAX(data_scadenza) FROM certificato WHERE cf_cliente = ?) < CURRENT_DATE, false) " +
+                "OR " +
+                "COALESCE((SELECT MAX(data_fine) FROM iscrizione WHERE cf_cliente = ?) < CURRENT_DATE, false) AS in_revisione";
+        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
+            ps.setString(1, codiceFiscale);
+            ps.setString(2, codiceFiscale);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean("in_revisione");
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Errore in certificatoScadutoOAbbonamentoFinito: " + e.getMessage());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean aggiornaStatoAccount(String codiceFiscale, StatoAccount stato) {
+        String query = "UPDATE cliente SET stato_account = ? WHERE codice_fiscale = ?;";
+        try (PreparedStatement ps = this.connection.prepareStatement(query)) {
+            ps.setString(1, stato.name());
+            ps.setString(2, codiceFiscale);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.out.println("Errore in aggiornaStatoAccount: " + e.getMessage());
+            return false;
+        }
+    }
 }

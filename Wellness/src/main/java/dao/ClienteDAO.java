@@ -2,6 +2,7 @@ package dao;
 
 import model.commerce.*;
 import model.enums.StatoPrenotazione;
+import model.enums.StatoAccount;
 import model.logistica.Lezione;
 import model.logistica.Prenotazione;
 import model.utenti.Cliente;
@@ -42,4 +43,8 @@ public interface ClienteDAO
     public boolean rimuoviSingoloProdotto(String cfCliente, int idProdotto, int quantita);
 
     public boolean annullaOrdineInElaborazione(int idOrdine);
+
+    boolean certificatoScadutoOAbbonamentoFinito(String codiceFiscale);
+
+    boolean aggiornaStatoAccount(String codiceFiscale, StatoAccount stato);
 }

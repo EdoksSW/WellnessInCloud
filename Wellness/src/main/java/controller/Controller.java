@@ -38,7 +38,19 @@ import java.util.List;
 
         public Utente login(String email, String password) {
             UtenteDAO utenteDAO = new UtenteImplementazionePostgresDAO();
-            return utenteDAO.loginDB(email, password);
+            Utente utente = utenteDAO.loginDB(email, password);
+            if (utente instanceof Cliente) {
+                Cliente cliente = (Cliente) utente;
+                if (cliente.getStatoAcc() != StatoAccount.BLOCCATO
+                        && cliente.getStatoAcc() != StatoAccount.IN_REVISIONE) {
+                    ClienteDAO clienteDAO = new ClienteImplementazionePostgresDAO();
+                    if (clienteDAO.certificatoScadutoOAbbonamentoFinito(cliente.getCodiceFiscale())) {
+                        clienteDAO.aggiornaStatoAccount(cliente.getCodiceFiscale(), StatoAccount.IN_REVISIONE);
+                        cliente.setStatoAcc(StatoAccount.IN_REVISIONE);
+                    }
+                }
+            }
+            return utente;
         }
 
         public ArrayList<Staff> getListaStaff() {

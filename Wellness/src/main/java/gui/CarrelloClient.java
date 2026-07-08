@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 
 public class CarrelloClient {
@@ -117,7 +119,6 @@ public class CarrelloClient {
         txtAcquista.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Recuperiamo il modello attuale direttamente dalla tabellaCarrello per poi verificare se ha 0 righe
                 DefaultTableModel defaultTableModel1 = (DefaultTableModel) tabellaCarrello.getModel();
 
                 if(defaultTableModel1.getRowCount() == 0)
@@ -129,16 +130,10 @@ public class CarrelloClient {
                 int risposta = JOptionPane.showConfirmDialog(frame, "Vuoi procedere con l'acquisto?", "Conferma l'ordine", JOptionPane.YES_NO_OPTION);
                 if(risposta == JOptionPane.YES_OPTION)
                 {
-                    // Invochiamo il controller passando l'oggetto clienteLoggato intero
                     if(controller.finalizzaAcquisto(clienteLoggato))
                     {
                         JOptionPane.showMessageDialog(frame, "Acquisto effettuato con successo!", "Successo", JOptionPane.INFORMATION_MESSAGE);
-
-                        // Apriamo una nuova istanza pulita dello ShopClient
-                        // Il suo costruttore eseguirà la query e mostrerà le giacenze ridotte del database (es. 55)
                         new ShopClient(controller, clienteLoggato, null);
-
-                        // Chiudiamo definitivamente la finestra attuale del carrello
                         frame.dispose();
                     } else {
                         JOptionPane.showMessageDialog(frame, "Errore durante l'acquisto. Controlla la disponibilità dei prodotti.", "Errore", JOptionPane.ERROR_MESSAGE);
@@ -158,6 +153,7 @@ public class CarrelloClient {
     {
         modelloCarrello.setRowCount(0);
         Carrello carrello=controller.ottieniCarrelloCliente(clienteLoggato);
+        BigDecimal totaleAccumulato = BigDecimal.ZERO;
 
         if(carrello != null && carrello.getMapCarrellol() != null && !carrello.getMapCarrellol().isEmpty())
         {
@@ -165,21 +161,23 @@ public class CarrelloClient {
             {
                 Prodotto prodotto=entry.getKey();
                 int quantita=entry.getValue();
-                double prezzo=(prodotto.getPrezzo() != null) ? prodotto.getPrezzo().doubleValue() : 0.0;
-                double subtotale=prezzo*quantita;
+
+                BigDecimal prezzoUnitario = (prodotto.getPrezzo() != null) ? prodotto.getPrezzo() : BigDecimal.ZERO;
+                BigDecimal quantitaBD = new BigDecimal(quantita);
+                BigDecimal subtotaleBD = prezzoUnitario.multiply(quantitaBD);
+
+                totaleAccumulato = totaleAccumulato.add(subtotaleBD);
 
                 Object[] riga=new Object[5];
                 riga[0]=prodotto.getId_prodotto();
                 riga[1]=prodotto.getNome();
-                riga[2]="euro "+prodotto.getPrezzo();
+                riga[2]="euro "+prezzoUnitario.setScale(2, RoundingMode.HALF_UP);
                 riga[3]=quantita;
-                riga[4]="euro "+subtotale;
+                riga[4]="euro "+subtotaleBD.setScale(2, RoundingMode.HALF_UP);
                 modelloCarrello.addRow(riga);
             }
         }
 
-        double totale=(carrello != null && carrello.getTotale() != null) ? carrello.getTotale().doubleValue() : 0.0;
-        lblTotale.setText("Totale Carrello: euro "+ totale);
+        lblTotale.setText("Totale Carrello: euro "+ totaleAccumulato.setScale(2, RoundingMode.HALF_UP));
     }
-
 }
